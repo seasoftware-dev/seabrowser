@@ -20,6 +20,7 @@ public:
     void add_visit(const std::string& url, const std::string& title);
     std::vector<HistoryItem> get_recent(int limit = 10);
     void clear_history();
+    void delete_history_item(const std::string& url);
     void cleanup_history();
 
 private:

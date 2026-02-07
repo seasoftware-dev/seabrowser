@@ -27,8 +27,10 @@ struct SearchSettings {
 
 struct AppearanceSettings {
     std::string theme = "system";
+    std::string custom_color = "#2563eb";
     int zoom_level = 100;
     bool show_sidebar = false;
+    bool vertical_tabs = false;
 };
 
 struct GeneralSettings {
@@ -62,10 +64,12 @@ public:
     void set_clear_on_exit(bool enabled);
     void set_default_search_engine(const std::string& name);
     void set_theme(const std::string& theme);
+    void set_custom_color(const std::string& color);
     void set_zoom_level(int level);
     void set_homepage(const std::string& url);
     void set_restore_tabs(bool enabled);
     void set_encrypt_settings(bool enabled);
+    void set_vertical_tabs(bool enabled);
     
     // Generic setter for JavaScript bridge
     void set_value(const std::string& key, const std::string& value);

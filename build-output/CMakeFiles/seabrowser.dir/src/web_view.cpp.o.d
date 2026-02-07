@@ -896,9 +896,9 @@ CMakeFiles/seabrowser.dir/src/web_view.cpp.o: \
  /usr/include/c++/15/bits/uses_allocator_args.h /usr/include/c++/15/tuple \
  /usr/include/c++/15/bits/ranges_util.h \
  /home/wyind/Documents/SeaBrowser/src/application.h \
- /usr/include/c++/15/fstream /usr/include/c++/15/istream \
- /usr/include/c++/15/ios /usr/include/c++/15/exception \
- /usr/include/c++/15/bits/exception_ptr.h \
+ /home/wyind/Documents/SeaBrowser/src/utils.h /usr/include/c++/15/sstream \
+ /usr/include/c++/15/istream /usr/include/c++/15/ios \
+ /usr/include/c++/15/exception /usr/include/c++/15/bits/exception_ptr.h \
  /usr/include/c++/15/bits/cxxabi_init_exception.h \
  /usr/include/c++/15/typeinfo /usr/include/c++/15/bits/nested_exception.h \
  /usr/include/c++/15/bits/ios_base.h /usr/include/c++/15/ext/atomicity.h \
@@ -921,10 +921,7 @@ CMakeFiles/seabrowser.dir/src/web_view.cpp.o: \
  /usr/include/c++/15/bits/locale_facets.tcc \
  /usr/include/c++/15/bits/basic_ios.tcc /usr/include/c++/15/ostream \
  /usr/include/c++/15/bits/ostream.h /usr/include/c++/15/bits/ostream.tcc \
- /usr/include/c++/15/bits/istream.tcc /usr/include/c++/15/bits/codecvt.h \
- /usr/include/c++/15/x86_64-redhat-linux/bits/basic_file.h \
- /usr/include/c++/15/x86_64-redhat-linux/bits/c++io.h \
- /usr/include/c++/15/bits/fstream.tcc /usr/include/c++/15/sstream \
+ /usr/include/c++/15/bits/istream.tcc \
  /usr/include/c++/15/bits/sstream.tcc /usr/include/c++/15/vector \
  /usr/include/c++/15/bits/stl_uninitialized.h \
  /usr/include/c++/15/bits/stl_vector.h \
@@ -938,7 +935,8 @@ CMakeFiles/seabrowser.dir/src/web_view.cpp.o: \
  /usr/include/c++/15/bits/locale_facets_nonio.h \
  /usr/include/c++/15/x86_64-redhat-linux/bits/time_members.h \
  /usr/include/c++/15/x86_64-redhat-linux/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/15/bits/locale_facets_nonio.tcc \
+ /usr/include/libintl.h /usr/include/c++/15/bits/codecvt.h \
+ /usr/include/c++/15/bits/locale_facets_nonio.tcc \
  /usr/include/c++/15/bits/locale_conv.h /usr/include/c++/15/iomanip \
  /usr/include/c++/15/bits/quoted_string.h /usr/include/c++/15/codecvt \
  /usr/include/c++/15/ext/concurrence.h \
@@ -948,9 +946,49 @@ CMakeFiles/seabrowser.dir/src/web_view.cpp.o: \
  /usr/include/c++/15/bits/unique_ptr.h \
  /usr/include/c++/15/ext/aligned_buffer.h \
  /usr/include/c++/15/bits/align.h /usr/include/c++/15/bits/fs_dir.h \
- /usr/include/c++/15/bits/fs_ops.h /usr/include/c++/15/iostream \
+ /usr/include/c++/15/bits/fs_ops.h /usr/include/c++/15/algorithm \
+ /usr/include/c++/15/bits/stl_algo.h \
+ /usr/include/c++/15/bits/algorithmfwd.h \
+ /usr/include/c++/15/bits/stl_heap.h \
+ /usr/include/c++/15/bits/uniform_int_dist.h \
+ /usr/include/c++/15/bits/stl_tempbuf.h \
+ /usr/include/c++/15/bits/ranges_algo.h \
+ /usr/include/c++/15/bits/ranges_algobase.h \
+ /usr/include/c++/15/pstl/glue_algorithm_defs.h \
+ /usr/include/c++/15/pstl/execution_defs.h /usr/include/c++/15/iostream \
+ /usr/include/c++/15/fstream \
+ /usr/include/c++/15/x86_64-redhat-linux/bits/basic_file.h \
+ /usr/include/c++/15/x86_64-redhat-linux/bits/c++io.h \
+ /usr/include/c++/15/bits/fstream.tcc \
+ /usr/include/json-glib-1.0/json-glib/json-glib.h \
+ /usr/include/json-glib-1.0/json-glib/json-types.h \
+ /usr/include/json-glib-1.0/json-glib/json-version-macros.h \
+ /usr/include/json-glib-1.0/json-glib/json-version.h \
+ /usr/include/json-glib-1.0/json-glib/json-builder.h \
+ /usr/include/json-glib-1.0/json-glib/json-generator.h \
+ /usr/include/json-glib-1.0/json-glib/json-parser.h \
+ /usr/include/json-glib-1.0/json-glib/json-path.h \
+ /usr/include/json-glib-1.0/json-glib/json-reader.h \
+ /usr/include/json-glib-1.0/json-glib/json-utils.h \
+ /usr/include/json-glib-1.0/json-glib/json-enum-types.h \
+ /usr/include/json-glib-1.0/json-glib/json-gobject.h \
+ /usr/include/json-glib-1.0/json-glib/json-gvariant.h \
  /home/wyind/Documents/SeaBrowser/src/settings/settings_manager.h \
  /home/wyind/Documents/SeaBrowser/src/history/history_manager.h \
  /usr/include/sqlite3.h /usr/include/c++/15/mutex \
  /usr/include/c++/15/bits/std_mutex.h \
- /usr/include/c++/15/bits/unique_lock.h
+ /usr/include/c++/15/bits/unique_lock.h \
+ /home/wyind/Documents/SeaBrowser/src/extension_manager.h \
+ /home/wyind/Documents/SeaBrowser/src/browser_window.h \
+ /usr/include/c++/15/memory \
+ /usr/include/c++/15/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/15/bits/shared_ptr_atomic.h \
+ /usr/include/c++/15/bits/atomic_base.h \
+ /usr/include/c++/15/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/15/bits/atomic_wait.h /usr/include/c++/15/climits \
+ /usr/include/syscall.h /usr/include/sys/syscall.h \
+ /usr/include/asm/unistd.h /usr/include/asm/unistd_64.h \
+ /usr/include/bits/syscall.h /usr/include/c++/15/backward/auto_ptr.h \
+ /usr/include/c++/15/bits/ranges_uninitialized.h \
+ /usr/include/c++/15/pstl/glue_memory_defs.h \
+ /home/wyind/Documents/SeaBrowser/src/tab_manager.h

@@ -7,6 +7,7 @@ seabrowser: \
   CMakeFiles/seabrowser.dir/src/browser_window.cpp.o \
   CMakeFiles/seabrowser.dir/src/web_view.cpp.o \
   CMakeFiles/seabrowser.dir/src/tab_manager.cpp.o \
+  CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o \
   CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o \
   CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o \
   CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o \
@@ -44,6 +45,10 @@ seabrowser: \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libglib-2.0.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libsqlite3.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libX11.so \
+  /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libjson-glib-1.0.so \
+  /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgio-2.0.so \
+  /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgobject-2.0.so \
+  /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libglib-2.0.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgtk-3.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgdk-3.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libz.so \
@@ -54,13 +59,13 @@ seabrowser: \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libcairo-gobject.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libcairo.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgdk_pixbuf-2.0.so \
-  /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgio-2.0.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libwebkit2gtk-4.1.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libsoup-3.0.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgmodule-2.0.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libjavascriptcoregtk-4.1.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libsqlite3.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libX11.so \
+  /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libjson-glib-1.0.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/libstdc++.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libm.so \
   /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libm.so \
@@ -178,7 +183,6 @@ seabrowser: \
   /lib64/ld-linux-x86-64.so.2 \
   /usr/lib64/libatspi.so.0 \
   /usr/lib64/libdbus-1.so.3 \
-  /usr/lib64/libjson-glib-1.0.so.0 \
   /usr/lib64/libdatrie.so.1 \
   /usr/lib64/libbz2.so.1 \
   /usr/lib64/libXau.so.6 \
@@ -256,6 +260,8 @@ CMakeFiles/seabrowser.dir/src/web_view.cpp.o:
 
 CMakeFiles/seabrowser.dir/src/tab_manager.cpp.o:
 
+CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o:
+
 CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o:
 
 CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o:
@@ -330,6 +336,14 @@ CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o:
 
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libX11.so:
 
+/usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libjson-glib-1.0.so:
+
+/usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgio-2.0.so:
+
+/usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgobject-2.0.so:
+
+/usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libglib-2.0.so:
+
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgtk-3.so:
 
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgdk-3.so:
@@ -350,8 +364,6 @@ CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o:
 
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgdk_pixbuf-2.0.so:
 
-/usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libgio-2.0.so:
-
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libwebkit2gtk-4.1.so:
 
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libsoup-3.0.so:
@@ -363,6 +375,8 @@ CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o:
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libsqlite3.so:
 
 /usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libX11.so:
+
+/usr/lib/gcc/x86_64-redhat-linux/15/../../../../lib64/libjson-glib-1.0.so:
 
 /usr/lib/gcc/x86_64-redhat-linux/15/libstdc++.so:
 
@@ -597,8 +611,6 @@ CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o:
 /usr/lib64/libatspi.so.0:
 
 /usr/lib64/libdbus-1.so.3:
-
-/usr/lib64/libjson-glib-1.0.so.0:
 
 /usr/lib64/libdatrie.so.1:
 

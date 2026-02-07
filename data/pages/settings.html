@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Settings - Sea Browser</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="sea://resources/font-awesome.css">
     <style>
         * {
             margin: 0;
@@ -459,8 +459,18 @@
                     <select id="theme">
                         <option value="dark">Ocean Dark</option>
                         <option value="light">Coastal Light</option>
+                        <option value="custom">Custom Color</option>
                         <option value="system">System Default</option>
                     </select>
+                </div>
+            </div>
+            <div class="setting-row" id="custom-color-row" style="display: none;">
+                <div class="setting-info">
+                    <h3>Custom Color</h3>
+                    <p>Pick your preferred accent color</p>
+                </div>
+                <div class="setting-control">
+                    <input type="color" id="custom-color" value="#2563eb" style="width: 60px; height: 36px; border: none; cursor: pointer;">
                 </div>
             </div>
             <div class="setting-row">
@@ -913,6 +923,27 @@
             });
         }
 
+        // Theme handling
+        const themeSelect = document.getElementById('theme');
+        const customColorRow = document.getElementById('custom-color-row');
+        const customColorInput = document.getElementById('custom-color');
+
+        if (themeSelect) {
+            themeSelect.addEventListener('change', () => {
+                if (themeSelect.value === 'custom') {
+                    customColorRow.style.display = 'flex';
+                } else {
+                    customColorRow.style.display = 'none';
+                }
+            });
+        }
+
+        // Apply loaded settings for theme and custom color
+        if (settings.theme === 'custom') {
+            customColorRow.style.display = 'flex';
+            if (customColorInput) customColorInput.value = settings.custom_color || '#2563eb';
+        }
+
         // Settings persistence (connects to C++ backend via message handlers)
         function saveSetting(key, value) {
             // Convert value to string for C++ backend
@@ -920,17 +951,16 @@
             console.log('Saving:', key, '=', strValue);
 
             // Use WebKit message handlers to send to C++ backend
-            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.settings) {
-                window.webkit.messageHandlers.settings.postMessage({ key: key, value: strValue });
+            // Use WebKit message handlers to send to C++ backend
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage({ action: 'saveSetting', key: key, value: strValue });
             }
         }
 
         // Load saved settings on page init
         (function loadSettings() {
             try {
-                // The C++ backend injects the JSON settings string here
-                const settings = {{ SETTINGS_DATA }
-            };
+                const settings = {{SETTINGS_DATA}};
             console.log('Loaded settings:', settings);
 
             // Apply loaded settings to form elements
@@ -1055,8 +1085,8 @@
 
         // Set as default browser (sends message to backend)
         function setAsDefaultBrowser() {
-            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.settings) {
-                window.webkit.messageHandlers.settings.postMessage({ action: 'set_default_browser' });
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage({ action: 'set_default_browser' });
                 alert('Sea Browser has been set as your default browser!');
             } else {
                 // Fallback: show instructions
@@ -1068,7 +1098,8 @@
         document.querySelectorAll('input, select').forEach(el => {
             el.addEventListener('change', () => {
                 const value = el.type === 'checkbox' ? el.checked : el.value;
-                saveSetting(el.id, value);
+                const key = el.id;
+                saveSetting(key, value);
             });
         });
     </script>

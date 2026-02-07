@@ -105,6 +105,20 @@ void HistoryManager::clear_history() {
     sqlite3_exec(db_, sql, nullptr, nullptr, nullptr);
 }
 
+void HistoryManager::delete_history_item(const std::string& url) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!db_) return;
+    
+    const char* sql = "DELETE FROM visits WHERE url = ?;";
+    sqlite3_stmt* stmt;
+    
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, url.c_str(), -1, SQLITE_STATIC);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+    }
+}
+
 void HistoryManager::cleanup_history() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!db_) return;

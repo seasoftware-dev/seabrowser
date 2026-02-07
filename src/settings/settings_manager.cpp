@@ -100,9 +100,11 @@ void SettingsManager::load(const std::string& config_path) {
         else if (key == "clear_on_exit") privacy_.clear_on_exit = (value == "true" || value == "1");
         else if (key == "default_engine") search_.default_engine = value;
         else if (key == "show_suggestions") search_.show_suggestions = (value == "true" || value == "1");
-        else if (key == "theme") appearance_.theme = value;
-        else if (key == "zoom_level") appearance_.zoom_level = std::stoi(value);
-        else if (key == "show_sidebar") appearance_.show_sidebar = (value == "true" || value == "1");
+    else if (key == "theme") appearance_.theme = value;
+    else if (key == "custom_color") appearance_.custom_color = value;
+    else if (key == "zoom_level") appearance_.zoom_level = std::stoi(value);
+    else if (key == "show_sidebar") appearance_.show_sidebar = (value == "true" || value == "1");
+    else if (key == "vertical_tabs") appearance_.vertical_tabs = (value == "true" || value == "1");
         else if (key == "homepage") general_.homepage = value;
         else if (key == "download_path") general_.download_path = value;
         else if (key == "ask_where_to_save") general_.ask_where_to_save = (value == "true" || value == "1");
@@ -148,8 +150,10 @@ void SettingsManager::save() {
     // Appearance
     ss << "\n# Appearance\n";
     ss << "theme=" << appearance_.theme << "\n";
+    ss << "custom_color=" << appearance_.custom_color << "\n";
     ss << "zoom_level=" << appearance_.zoom_level << "\n";
     ss << "show_sidebar=" << (appearance_.show_sidebar ? "true" : "false") << "\n";
+    ss << "vertical_tabs=" << (appearance_.vertical_tabs ? "true" : "false") << "\n";
     
     // General
     ss << "\n# General\n";
@@ -230,6 +234,16 @@ void SettingsManager::set_clear_on_exit(bool enabled) {
 
 void SettingsManager::set_zoom_level(int level) {
     appearance_.zoom_level = level;
+    save();
+}
+
+void SettingsManager::set_custom_color(const std::string& color) {
+    appearance_.custom_color = color;
+    save();
+}
+
+void SettingsManager::set_vertical_tabs(bool enabled) {
+    appearance_.vertical_tabs = enabled;
     save();
 }
 

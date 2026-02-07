@@ -5,49 +5,90 @@ window {
 }
 
 /* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
-headerbar.blue-titlebar {
+/* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
+/* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
+#sea-header {
     background-color: #2563eb !important;
     background-image: linear-gradient(to bottom, #3b82f6, #1d4ed8) !important;
     border-bottom: 2px solid #1e3a8a !important;
     padding: 0 6px;
-    min-height: 44px;
+    min-height: 48px;
     color: white !important;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
+/* Vertical tabs support */
+notebook.vertical-tabs {
+    display: flex;
+    flex-direction: row;
+}
+
+notebook.vertical-tabs header {
+    border: none;
+    border-right: 1px solid #1d4ed8;
+    padding: 8px 0;
+    min-width: 220px;
+}
+
+notebook.vertical-tabs notebook tab {
+    padding: 10px 16px;
+    border-radius: 0 8px 8px 0;
+    border-left: 3px solid transparent;
+    margin: 2px 0;
+}
+
+notebook.vertical-tabs notebook tab:checked {
+    background: rgba(37, 99, 235, 0.15);
+    border-left: 3px solid #2563eb;
+    color: #fff;
+}
+
+notebook.vertical-tabs notebook tab:hover:not(:checked) {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid rgba(59, 130, 246, 0.5);
+}
+
 /* All header buttons */
-headerbar.blue-titlebar button {
+#sea-header button {
     background: transparent !important;
     border: none !important;
     border-radius: 8px !important;
     color: white !important;
     padding: 6px !important;
-    margin: 0 1px !important;
+    margin: 0 2px !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none !important;
 }
 
-headerbar.blue-titlebar button:hover {
+#sea-header button:hover {
     background: rgba(255, 255, 255, 0.2) !important;
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
 }
 
-headerbar.blue-titlebar button:active {
+#sea-header button:active {
     background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(1px);
+}
+
+/* Specific button styles */
+.nav-btn {
+    min-width: 32px;
+    min-height: 32px;
 }
 
 /* Window Control Buttons (Min, Max, Close) */
 .win-control-btn {
-    min-width: 42px;
-    min-height: 42px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 0 !important;
-    padding: 8px !important;
+    padding: 0 !important;
     margin: 0 !important;
     opacity: 0.9;
     color: white !important;
 }
 
 .win-control-btn:hover {
-    background: rgba(255, 255, 255, 0.12) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
     opacity: 1;
 }
 
@@ -56,26 +97,26 @@ headerbar.blue-titlebar button:active {
 }
 
 /* URL Entry - Premium Search Bar Look */
-headerbar.blue-titlebar entry {
+#sea-header entry {
     background-color: rgba(15, 23, 42, 0.5) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 10px !important;
+    border-radius: 12px !important;
     color: #fff !important;
     padding: 6px 14px !important;
-    font-size: 13.5px !important;
-    min-height: 30px !important;
+    font-size: 14px !important;
+    min-height: 34px !important;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     transition: all 0.2s ease;
 }
 
-headerbar.blue-titlebar entry:focus {
-    border-color: rgba(255, 255, 255, 0.5) !important;
-    background-color: rgba(15, 23, 42, 0.8) !important;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4) !important;
+#sea-header entry:focus {
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15) !important;
 }
 
 entry:focus {
-    border-color: rgba(37, 99, 235, 0.5);
+    border-color: rgba(255, 255, 255, 0.5);
     background-color: rgba(28, 33, 40, 0.95);
     box-shadow:
         inset 0 1px 2px rgba(0, 0, 0, 0.2),
@@ -218,4 +259,42 @@ spinner {
 
 .tor-mode headerbar {
     background: linear-gradient(180deg, rgba(126, 34, 206, 0.9) 0%, rgba(13, 17, 23, 0.9) 100%);
+}
+
+/* Find Bar */
+.find-bar {
+    background: rgba(13, 17, 23, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+}
+
+.find-bar label {
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+.find-bar entry {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+    padding: 6px 12px;
+}
+
+.find-bar entry:focus {
+    border-color: #3b82f6;
+    outline: none;
+}
+
+.find-bar button {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    padding: 6px 10px;
+    border-radius: 4px;
+}
+
+.find-bar button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }

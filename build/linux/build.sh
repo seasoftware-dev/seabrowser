@@ -1,6 +1,7 @@
 #!/bin/bash
-# Sea Browser - Linux Build Script
-# Builds the browser from source
+
+# Sea Browser Build Script (Linux)
+# ===================================
 
 set -e
 
@@ -8,61 +9,80 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_DIR="$PROJECT_ROOT/build-output"
 
-echo "🌊 Sea Browser Build Script"
-echo "==========================="
+echo "==================================="
+echo "  Sea Browser Build Script (Linux)"
+echo "==================================="
+echo ""
+echo "Project root: $PROJECT_ROOT"
+echo "Build output: $BUILD_DIR"
+echo ""
 
-# Check dependencies
-echo "Checking dependencies..."
+# Check for required dependencies
+echo "[INFO] Checking dependencies..."
 
 check_pkg() {
     if ! pkg-config --exists "$1" 2>/dev/null; then
-        echo "❌ Missing: $1"
+        echo "[ERROR] Missing dependency: $1"
+        echo "        Install it using your package manager."
         return 1
     fi
-    echo "✓ Found: $1"
-    return 0
+    echo "  ✓ $1"
 }
 
 MISSING=0
-# Updated dependencies for GTK3 build
-check_pkg gtk+-3.0 || MISSING=1
-check_pkg sqlite3 || MISSING=1
-# webkit2gtk-4.1 is preferred, fall back to 4.0 if needed
-if pkg-config --exists webkit2gtk-4.1; then
-    echo "✓ Found: webkit2gtk-4.1"
-elif pkg-config --exists webkit2gtk-4.0; then
-    echo "✓ Found: webkit2gtk-4.0"
-else
-    echo "❌ Missing: webkit2gtk-4.1 (or 4.0)"
-    MISSING=1
-fi
+check_pkg "gtk+-3.0" || MISSING=1
+check_pkg "webkit2gtk-4.1" || MISSING=1
+check_pkg "sqlite3" || MISSING=1
+check_pkg "json-glib-1.0" || MISSING=1
+check_pkg "x11" || MISSING=1
 
 if [ $MISSING -eq 1 ]; then
     echo ""
-    echo "Install missing dependencies:"
-    echo "  Fedora: sudo dnf install gtk3-devel webkit2gtk4.1-devel sqlite-devel cmake gcc-c++"
-    echo "  Arch:   sudo pacman -S gtk3 webkit2gtk-4.1 sqlite cmake base-devel"
-    echo "  Ubuntu: sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libsqlite3-dev cmake g++"
+    echo "[ERROR] Some dependencies are missing. Please install them and try again."
+    echo ""
+    echo "Debian/Ubuntu: sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libsqlite3-dev libjson-glib-dev libx11-dev"
+    echo "Fedora:        sudo dnf install gtk3-devel webkit2gtk4.1-devel sqlite-devel json-glib-devel libX11-devel"
+    echo "Arch Linux:    sudo pacman -S gtk3 webkit2gtk-4.1 sqlite json-glib libx11"
     exit 1
 fi
 
 echo ""
-echo "Building..."
+echo "[INFO] All dependencies found."
+echo ""
 
-# Create and enter build directory
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR"
+# Create build directory
+if [ ! -d "$BUILD_DIR" ]; then
+    echo "[INFO] Creating build directory..."
+    mkdir -p "$BUILD_DIR"
+fi
+
 cd "$BUILD_DIR"
 
-# Configure
+# Configure with CMake
+echo "[INFO] Configuring CMake..."
 cmake "$PROJECT_ROOT" -DCMAKE_BUILD_TYPE=Release
 
+if [ $? -ne 0 ]; then
+    echo "[ERROR] CMake configuration failed."
+    exit 1
+fi
+
 # Build
+echo ""
+echo "[INFO] Building Sea Browser..."
 make -j$(nproc)
 
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Build failed."
+    exit 1
+fi
+
 echo ""
-echo "✅ Build successful!"
-echo "📦 Binary: $BUILD_DIR/seabrowser"
+echo "==================================="
+echo "  BUILD SUCCESSFUL!"
+echo "==================================="
 echo ""
-echo "Run with: $BUILD_DIR/seabrowser"
-echo "Install with: sudo make install"
+echo "Executable: $BUILD_DIR/seabrowser"
+echo ""
+echo "To run: $BUILD_DIR/seabrowser"
+echo ""

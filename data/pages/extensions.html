@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Extensions - Sea Browser</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="sea://resources/font-awesome.css">
     <style>
         * {
             margin: 0;
@@ -331,91 +331,15 @@
     </div>
 
     <div id="installed-content" class="tab-content">
-        <div class="extensions-grid">
-            <!-- uBlock Origin -->
-            <div class="extension-card">
-                <div class="extension-header">
-                    <div class="extension-icon"><i class="fa-solid fa-shield"></i></div>
-                    <div class="extension-info">
-                        <div class="extension-name">uBlock Origin</div>
-                        <div class="extension-author">Raymond Hill</div>
-                    </div>
-                </div>
-                <div class="extension-description">
-                    An efficient blocker: easy on memory and CPU footprint, yet can load and enforce thousands of
-                    filters.
-                </div>
-                <div class="extension-footer">
-                    <span class="extension-version">v1.55.0</span>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
+        <div id="extensions-grid" class="extensions-grid">
+            <!-- Extensions will be dynamically injected here -->
+        </div>
 
-            <!-- Privacy Badger -->
-            <div class="extension-card">
-                <div class="extension-header">
-                    <div class="extension-icon"><i class="fa-solid fa-paw"></i></div>
-                    <div class="extension-info">
-                        <div class="extension-name">Privacy Badger</div>
-                        <div class="extension-author">EFF</div>
-                    </div>
-                </div>
-                <div class="extension-description">
-                    Automatically learns to block invisible trackers based on their behavior.
-                </div>
-                <div class="extension-footer">
-                    <span class="extension-version">v2023.12.1</span>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- HTTPS Everywhere -->
-            <div class="extension-card">
-                <div class="extension-header">
-                    <div class="extension-icon"><i class="fa-solid fa-lock"></i></div>
-                    <div class="extension-info">
-                        <div class="extension-name">HTTPS Everywhere</div>
-                        <div class="extension-author">EFF</div>
-                    </div>
-                </div>
-                <div class="extension-description">
-                    Encrypts your communications with many websites, making browsing more secure.
-                </div>
-                <div class="extension-footer">
-                    <span class="extension-version">v2021.7.13</span>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Bitwarden -->
-            <div class="extension-card">
-                <div class="extension-header">
-                    <div class="extension-icon"><i class="fa-solid fa-key"></i></div>
-                    <div class="extension-info">
-                        <div class="extension-name">Bitwarden</div>
-                        <div class="extension-author">Bitwarden Inc.</div>
-                    </div>
-                </div>
-                <div class="extension-description">
-                    A secure and free password manager for all your devices.
-                </div>
-                <div class="extension-footer">
-                    <span class="extension-version">v2024.1.0</span>
-                    <label class="toggle">
-                        <input type="checkbox" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
+        <!-- Fallback empty state -->
+        <div id="no-extensions" class="empty-state" style="display: none;">
+            <div class="icon"><i class="fa-solid fa-puzzle-piece"></i></div>
+            <h2>No Extensions Installed</h2>
+            <p>Install Chrome or Firefox extensions to enhance your browsing experience.</p>
         </div>
     </div>
 
@@ -479,6 +403,9 @@
     </div>
 
     <script>
+        // Extensions data injected from C++ backend
+        let extensionsData = {{EXTENSIONS_DATA}};
+
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -493,19 +420,71 @@
             });
         });
 
-        // Toggle extension
-        document.querySelectorAll('.toggle input').forEach(toggle => {
-            toggle.addEventListener('change', () => {
-                const card = toggle.closest('.extension-card');
-                const name = card.querySelector('.extension-name').textContent;
-                const status = toggle.checked ? 'enabled' : 'disabled';
-                console.log(`Extension ${name} ${status}`);
-            });
-        });
+        function getExtensionIcon(type, name) {
+            if (type === 'JavaScript') return '<i class="fa-solid fa-code"></i>';
+            if (type === 'Chrome' || type === 'Firefox') return '<i class="fa-solid fa-puzzle-piece"></i>';
+            return '<i class="fa-solid fa-box"></i>';
+        }
+
+        function renderExtensions() {
+            const grid = document.getElementById('extensions-grid');
+            const noExtensions = document.getElementById('no-extensions');
+
+            if (extensionsData.length === 0) {
+                grid.style.display = 'none';
+                noExtensions.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            noExtensions.style.display = 'none';
+
+            grid.innerHTML = extensionsData.map(ext => `
+                <div class="extension-card">
+                    <div class="extension-header">
+                        <div class="extension-icon">${getExtensionIcon(ext.type, ext.name)}</div>
+                        <div class="extension-info">
+                            <div class="extension-name">${ext.name}</div>
+                            <div class="extension-author">${ext.author || 'Unknown'}</div>
+                        </div>
+                    </div>
+                    <div class="extension-description">
+                        ${ext.description || 'No description available'}
+                    </div>
+                    <div class="extension-footer">
+                        <span class="extension-version">v${ext.version || '1.0.0'}</span>
+                        <label class="toggle">
+                            <input type="checkbox" ${ext.enabled ? 'checked' : ''} onchange="toggleExtension('${ext.name}', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleExtension(name, enabled) {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage({
+                    action: 'toggleExtension',
+                    name: name,
+                    enabled: enabled
+                });
+            }
+
+            // Update local state
+            const ext = extensionsData.find(e => e.name === name);
+            if (ext) {
+                ext.enabled = enabled;
+            }
+            console.log(`Extension ${name} ${enabled ? 'enabled' : 'disabled'}`);
+        }
 
         function toggleDevMode() {
-            alert('Developer mode allows you to load unpacked extensions for testing.');
+            alert('Developer mode allows you to load unpacked extensions for testing.\n\nPlace your extension files in:\n~/.config/seabrowser/extensions/');
         }
+
+        // Initial render
+        renderExtensions();
     </script>
 </body>
 

@@ -29,37 +29,37 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 30,
+				"line" : 34,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 62,
+				"line" : 68,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 42,
+				"line" : 47,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 53,
+				"line" : 59,
 				"parent" : 0
 			},
 			{
 				"command" : 4,
 				"file" : 0,
-				"line" : 50,
+				"line" : 56,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 0,
-				"line" : 33,
+				"line" : 37,
 				"parent" : 0
 			}
 		]
@@ -201,6 +201,10 @@
 				{
 					"backtrace" : 6,
 					"path" : "/usr/include/libsoup-3.0"
+				},
+				{
+					"backtrace" : 6,
+					"path" : "/usr/include/json-glib-1.0"
 				}
 			],
 			"language" : "CXX",
@@ -223,7 +227,10 @@
 				6,
 				7,
 				8,
-				9
+				9,
+				10,
+				11,
+				12
 			]
 		}
 	],
@@ -412,6 +419,26 @@
 			},
 			{
 				"backtrace" : 3,
+				"fragment" : "-ljson-glib-1.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lgio-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lgobject-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lglib-2.0",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
 				"fragment" : "-lgtk-3",
 				"role" : "libraries"
 			},
@@ -462,11 +489,6 @@
 			},
 			{
 				"backtrace" : 3,
-				"fragment" : "-lgio-2.0",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
 				"fragment" : "-lwebkit2gtk-4.1",
 				"role" : "libraries"
 			},
@@ -494,6 +516,11 @@
 				"backtrace" : 3,
 				"fragment" : "-lX11",
 				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-ljson-glib-1.0",
+				"role" : "libraries"
 			}
 		],
 		"language" : "CXX"
@@ -520,7 +547,10 @@
 				6,
 				7,
 				8,
-				9
+				9,
+				10,
+				11,
+				12
 			]
 		}
 	],
@@ -559,6 +589,12 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
+			"path" : "src/extension_manager.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
 			"path" : "src/settings/settings_manager.cpp",
 			"sourceGroupIndex" : 0
 		},
@@ -584,6 +620,18 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "src/history/history_manager.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/bookmarks/bookmarks_manager.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/downloads/downloads_manager.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

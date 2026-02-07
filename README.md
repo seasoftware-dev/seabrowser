@@ -1,4 +1,4 @@
-# Sea Browser
+Sea Browser
 
 Sea Browser is a privacy-focused web browser built with C++ and GTK3. It aims to provide a fast, secure, and distraction-free browsing experience.
 

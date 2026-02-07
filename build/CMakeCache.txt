@@ -307,6 +307,18 @@ pkgcfg_lib_GTK3_pangocairo-1.0:FILEPATH=/usr/lib64/libpangocairo-1.0.so
 pkgcfg_lib_GTK3_z:FILEPATH=/usr/lib64/libz.so
 
 //Path to a library.
+pkgcfg_lib_JSON_GLIB_gio-2.0:FILEPATH=/usr/lib64/libgio-2.0.so
+
+//Path to a library.
+pkgcfg_lib_JSON_GLIB_glib-2.0:FILEPATH=/usr/lib64/libglib-2.0.so
+
+//Path to a library.
+pkgcfg_lib_JSON_GLIB_gobject-2.0:FILEPATH=/usr/lib64/libgobject-2.0.so
+
+//Path to a library.
+pkgcfg_lib_JSON_GLIB_json-glib-1.0:FILEPATH=/usr/lib64/libjson-glib-1.0.so
+
+//Path to a library.
 pkgcfg_lib_SQLITE_sqlite3:FILEPATH=/usr/lib64/libsqlite3.so
 
 //Path to a library.
@@ -568,6 +580,41 @@ GTK3_gtk+-3.0_INCLUDEDIR:INTERNAL=
 GTK3_gtk+-3.0_LIBDIR:INTERNAL=
 GTK3_gtk+-3.0_PREFIX:INTERNAL=
 GTK3_gtk+-3.0_VERSION:INTERNAL=
+JSON_GLIB_CFLAGS:INTERNAL=-I/usr/include/json-glib-1.0;-I/usr/include;-I/usr/include/glib-2.0;-I/usr/lib64/glib-2.0/include;-DWITH_GZFILEOP;-I/usr/include/libmount;-I/usr/include/blkid;-I/usr/include/sysprof-6;-pthread
+JSON_GLIB_CFLAGS_I:INTERNAL=
+JSON_GLIB_CFLAGS_OTHER:INTERNAL=-DWITH_GZFILEOP;-pthread
+JSON_GLIB_FOUND:INTERNAL=1
+JSON_GLIB_INCLUDEDIR:INTERNAL=/usr/include
+JSON_GLIB_INCLUDE_DIRS:INTERNAL=/usr/include/json-glib-1.0;/usr/include;/usr/include/glib-2.0;/usr/lib64/glib-2.0/include;/usr/include/libmount;/usr/include/blkid;/usr/include/sysprof-6
+JSON_GLIB_LDFLAGS:INTERNAL=-L/usr/lib64;-ljson-glib-1.0;-lgio-2.0;-lgobject-2.0;-lglib-2.0
+JSON_GLIB_LDFLAGS_OTHER:INTERNAL=
+JSON_GLIB_LIBDIR:INTERNAL=/usr/lib64
+JSON_GLIB_LIBRARIES:INTERNAL=json-glib-1.0;gio-2.0;gobject-2.0;glib-2.0
+JSON_GLIB_LIBRARY_DIRS:INTERNAL=/usr/lib64
+JSON_GLIB_LIBS:INTERNAL=
+JSON_GLIB_LIBS_L:INTERNAL=
+JSON_GLIB_LIBS_OTHER:INTERNAL=
+JSON_GLIB_LIBS_PATHS:INTERNAL=
+JSON_GLIB_MODULE_NAME:INTERNAL=json-glib-1.0
+JSON_GLIB_PREFIX:INTERNAL=/usr
+JSON_GLIB_STATIC_CFLAGS:INTERNAL=-I/usr/include/json-glib-1.0;-I/usr/include;-I/usr/include/glib-2.0;-I/usr/lib64/glib-2.0/include;-DWITH_GZFILEOP;-I/usr/include/libmount;-I/usr/include/blkid;-I/usr/include/sysprof-6;-pthread
+JSON_GLIB_STATIC_CFLAGS_I:INTERNAL=
+JSON_GLIB_STATIC_CFLAGS_OTHER:INTERNAL=-DWITH_GZFILEOP;-pthread
+JSON_GLIB_STATIC_INCLUDE_DIRS:INTERNAL=/usr/include/json-glib-1.0;/usr/include;/usr/include/glib-2.0;/usr/lib64/glib-2.0/include;/usr/include/libmount;/usr/include/blkid;/usr/include/sysprof-6
+JSON_GLIB_STATIC_LDFLAGS:INTERNAL=-L/usr/lib64;-ljson-glib-1.0;-lgio-2.0;-lgobject-2.0;-lffi;-lgmodule-2.0;-pthread;-lglib-2.0;-lm;-pthread;-lz;-lmount;-lblkid;-lselinux;-lsepol;-lpcre2-8;-pthread;-lpthread;-lsysprof-capture-4;-Wl,-z,nodelete;-pthread
+JSON_GLIB_STATIC_LDFLAGS_OTHER:INTERNAL=-pthread;-pthread;-pthread;-Wl,-z,nodelete;-pthread
+JSON_GLIB_STATIC_LIBDIR:INTERNAL=
+JSON_GLIB_STATIC_LIBRARIES:INTERNAL=json-glib-1.0;gio-2.0;gobject-2.0;ffi;gmodule-2.0;glib-2.0;m;z;mount;blkid;selinux;sepol;pcre2-8;pthread;sysprof-capture-4
+JSON_GLIB_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib64
+JSON_GLIB_STATIC_LIBS:INTERNAL=
+JSON_GLIB_STATIC_LIBS_L:INTERNAL=
+JSON_GLIB_STATIC_LIBS_OTHER:INTERNAL=
+JSON_GLIB_STATIC_LIBS_PATHS:INTERNAL=
+JSON_GLIB_VERSION:INTERNAL=1.10.8
+JSON_GLIB_json-glib-1.0_INCLUDEDIR:INTERNAL=
+JSON_GLIB_json-glib-1.0_LIBDIR:INTERNAL=
+JSON_GLIB_json-glib-1.0_PREFIX:INTERNAL=
+JSON_GLIB_json-glib-1.0_VERSION:INTERNAL=
 //ADVANCED property for variable: PKG_CONFIG_ARGN
 PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
@@ -678,10 +725,12 @@ X11_x11_LIBDIR:INTERNAL=
 X11_x11_PREFIX:INTERNAL=
 X11_x11_VERSION:INTERNAL=
 __pkg_config_arguments_GTK3:INTERNAL=REQUIRED;gtk+-3.0
+__pkg_config_arguments_JSON_GLIB:INTERNAL=REQUIRED;json-glib-1.0
 __pkg_config_arguments_SQLITE:INTERNAL=REQUIRED;sqlite3
 __pkg_config_arguments_WEBKIT:INTERNAL=REQUIRED;webkit2gtk-4.1
 __pkg_config_arguments_X11:INTERNAL=REQUIRED;x11
 __pkg_config_checked_GTK3:INTERNAL=1
+__pkg_config_checked_JSON_GLIB:INTERNAL=1
 __pkg_config_checked_SQLITE:INTERNAL=1
 __pkg_config_checked_WEBKIT:INTERNAL=1
 __pkg_config_checked_X11:INTERNAL=1
@@ -711,6 +760,14 @@ pkgcfg_lib_GTK3_pango-1.0-ADVANCED:INTERNAL=1
 pkgcfg_lib_GTK3_pangocairo-1.0-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: pkgcfg_lib_GTK3_z
 pkgcfg_lib_GTK3_z-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_JSON_GLIB_gio-2.0
+pkgcfg_lib_JSON_GLIB_gio-2.0-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_JSON_GLIB_glib-2.0
+pkgcfg_lib_JSON_GLIB_glib-2.0-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_JSON_GLIB_gobject-2.0
+pkgcfg_lib_JSON_GLIB_gobject-2.0-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_JSON_GLIB_json-glib-1.0
+pkgcfg_lib_JSON_GLIB_json-glib-1.0-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: pkgcfg_lib_SQLITE_sqlite3
 pkgcfg_lib_SQLITE_sqlite3-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: pkgcfg_lib_WEBKIT_atk-1.0

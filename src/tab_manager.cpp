@@ -88,49 +88,8 @@ GtkWidget* TabManager::create_tab(const std::string& url, bool switch_to) {
         gtk_notebook_set_current_page(notebook_, index);
     }
     
-    // Register script message handler for settings
-    auto content_manager = webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(web_view));
-    
-    // Settings message handler
-    g_signal_connect(content_manager, "script-message-received::settings", 
-        G_CALLBACK(+[](WebKitUserContentManager*, WebKitJavascriptResult* js_result, gpointer) {
-            JSCValue* value = webkit_javascript_result_get_js_value(js_result);
-            
-            if (jsc_value_is_object(value)) {
-                JSCValue* key_val = jsc_value_object_get_property(value, "key");
-                JSCValue* val_val = jsc_value_object_get_property(value, "value");
-                
-                if (key_val && val_val) {
-                    char* key = jsc_value_to_string(key_val);
-                    char* val = jsc_value_to_string(val_val);
-                    
-                    std::cout << "[SeaBrowser] Setting: " << key << " = " << val << std::endl;
-                    SettingsManager::instance().set_value(key, val);
-                    
-                    g_free(key);
-                    g_free(val);
-                }
-            }
-        }), nullptr);
-    webkit_user_content_manager_register_script_message_handler(content_manager, "settings");
-    
-    // History clear message handler
-    g_signal_connect(content_manager, "script-message-received::history",
-        G_CALLBACK(+[](WebKitUserContentManager*, WebKitJavascriptResult* js_result, gpointer) {
-            JSCValue* value = webkit_javascript_result_get_js_value(js_result);
-            if (jsc_value_is_object(value)) {
-                JSCValue* action_val = jsc_value_object_get_property(value, "action");
-                if (action_val) {
-                    char* action = jsc_value_to_string(action_val);
-                    if (strcmp(action, "clear") == 0) {
-                        HistoryManager::instance().clear_history();
-                        std::cout << "[SeaBrowser] History cleared" << std::endl;
-                    }
-                    g_free(action);
-                }
-            }
-        }), nullptr);
-    webkit_user_content_manager_register_script_message_handler(content_manager, "history");
+    // Register security-hardened internal page bridge
+    WebView::setup_internal_page_bridge(WEBKIT_WEB_VIEW(web_view));
     
     // Load the URL - use load_uri for ALL URLs including sea:// so the scheme handler is triggered
     if (!url.empty()) {

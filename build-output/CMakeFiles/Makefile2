@@ -85,12 +85,12 @@ clean: CMakeFiles/seabrowser.dir/clean
 CMakeFiles/seabrowser.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target seabrowser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12 "Built target seabrowser"
 .PHONY : CMakeFiles/seabrowser.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/seabrowser.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/wyind/Documents/SeaBrowser/build-output/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/wyind/Documents/SeaBrowser/build-output/CMakeFiles 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/seabrowser.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/wyind/Documents/SeaBrowser/build-output/CMakeFiles 0
 .PHONY : CMakeFiles/seabrowser.dir/rule
@@ -102,7 +102,7 @@ seabrowser: CMakeFiles/seabrowser.dir/rule
 # codegen rule for target.
 CMakeFiles/seabrowser.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Finished codegen for target seabrowser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12 "Finished codegen for target seabrowser"
 .PHONY : CMakeFiles/seabrowser.dir/codegen
 
 # clean rule for target.

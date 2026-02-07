@@ -242,6 +242,30 @@ src/browser_window.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/browser_window.cpp.s
 .PHONY : src/browser_window.cpp.s
 
+src/extension_manager.o: src/extension_manager.cpp.o
+.PHONY : src/extension_manager.o
+
+# target to build an object file
+src/extension_manager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o
+.PHONY : src/extension_manager.cpp.o
+
+src/extension_manager.i: src/extension_manager.cpp.i
+.PHONY : src/extension_manager.i
+
+# target to preprocess a source file
+src/extension_manager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/extension_manager.cpp.i
+.PHONY : src/extension_manager.cpp.i
+
+src/extension_manager.s: src/extension_manager.cpp.s
+.PHONY : src/extension_manager.s
+
+# target to generate assembly for a file
+src/extension_manager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/extension_manager.cpp.s
+.PHONY : src/extension_manager.cpp.s
+
 src/history/history_manager.o: src/history/history_manager.cpp.o
 .PHONY : src/history/history_manager.o
 
@@ -455,6 +479,9 @@ help:
 	@echo "... src/browser_window.o"
 	@echo "... src/browser_window.i"
 	@echo "... src/browser_window.s"
+	@echo "... src/extension_manager.o"
+	@echo "... src/extension_manager.i"
+	@echo "... src/extension_manager.s"
 	@echo "... src/history/history_manager.o"
 	@echo "... src/history/history_manager.i"
 	@echo "... src/history/history_manager.s"

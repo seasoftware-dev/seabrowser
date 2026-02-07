@@ -25,6 +25,7 @@ public:
     WebKitWebView* get_current_web_view();
     GtkWidget* get_current_tab_widget();
     int get_tab_count();
+    GtkNotebook* get_notebook() const { return notebook_; }
 
 private:
     GtkNotebook* notebook_;

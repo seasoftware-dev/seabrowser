@@ -413,6 +413,10 @@
 
     <script>
         let currentStep = 1;
+        let selectedSettings = {
+            privacy: 'standard',
+            search: 'duckduckgo'
+        };
 
         function nextStep(step) {
             document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
@@ -426,11 +430,36 @@
         function selectOption(el, value) {
             el.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
             el.classList.add('selected');
-            console.log('Selected:', value);
+
+            // Store selection
+            const stepId = el.closest('.step').id;
+            if (stepId === 'step2') selectedSettings.privacy = value;
+            if (stepId === 'step3') selectedSettings.search = value;
+        }
+
+        function saveSetting(key, value) {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage({
+                    action: 'saveSetting',
+                    key: key,
+                    value: String(value)
+                });
+            }
+            console.log('Saved:', key, value);
         }
 
         function finishSetup() {
-            window.location = 'sea://newtab';
+            // Save all choices
+            saveSetting('tracking_protection', selectedSettings.privacy);
+            saveSetting('default_engine', selectedSettings.search);
+
+            // Mark setup as complete
+            saveSetting('setup_completed', 'true'); // String 'true' for C++ parser
+
+            // Give it a moment to save before navigating
+            setTimeout(() => {
+                window.location = 'sea://newtab';
+            }, 100);
         }
     </script>
 </body>

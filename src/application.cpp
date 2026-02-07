@@ -6,35 +6,25 @@
 #include "application.h"
 #include "browser_window.h"
 #include "web_view.h"
+#include "utils.h"
+#include "extension_manager.h"
 #include "settings/settings_manager.h"
 #include "history/history_manager.h"
+#include "bookmarks/bookmarks_manager.h"
+#include "downloads/downloads_manager.h"
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <vector>
-#include <limits.h>
 #include <unistd.h>
 
 namespace SeaBrowser {
 
-// Get the directory where the executable is located
-static std::string get_exe_dir() {
-    char buf[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
-    if (len != -1) {
-        buf[len] = '\0';
-        std::string path(buf);
-        size_t pos = path.rfind('/');
-        if (pos != std::string::npos) {
-            return path.substr(0, pos);
-        }
-    }
-    return ".";
-}
-
 // Find a resource file by checking multiple locations
 static std::string find_resource(const std::string& relative_path) {
-    std::string exe_dir = get_exe_dir();
+    if (!Utils::is_safe_resource_path(relative_path)) return "";
+    
+    std::string exe_dir = Utils::get_exe_dir();
     
     std::vector<std::string> search_paths = {
 #ifdef PROJECT_SOURCE_DIR
@@ -53,6 +43,11 @@ static std::string find_resource(const std::string& relative_path) {
         }
     }
     return "";
+}
+
+// Wrapper function for main.cpp
+int Application_run(int argc, char* argv[]) {
+    return SeaBrowser::Application::run(argc, argv);
 }
 
 int Application::run(int argc, char* argv[]) {
@@ -138,6 +133,12 @@ void Application::on_startup(GApplication*, gpointer) {
     
     // Initialize history
     HistoryManager::instance().init(get_data_dir() + "/history.db");
+    
+    // Initialize bookmarks
+    BookmarksManager::instance().init(get_data_dir() + "/bookmarks.db");
+    
+    // Initialize downloads
+    DownloadsManager::instance().init(get_data_dir() + "/downloads.db");
 
     // Register custom URI scheme for internal pages
     auto context = webkit_web_context_get_default();
@@ -152,17 +153,25 @@ void Application::on_activate(GtkApplication* app, gpointer) {
     bool first_run = !SettingsManager::instance().general().setup_completed;
     g_setenv("SEA_BROWSER_FIRST_RUN", first_run ? "1" : "0", TRUE);
     
+    // Initialize extension system
+    ExtensionManager::instance().init();
+    
     auto window = BrowserWindow::create(app);
     
     // Fallback: Apply CSS provider directly to window if it failed at screen level
     auto display = gdk_display_get_default();
+    if (!display) return;
+    
     auto provider = (GtkCssProvider*)g_object_get_data(G_OBJECT(display), "sea-css-provider");
-    if (provider) {
-        gtk_style_context_add_provider(
-            gtk_widget_get_style_context(GTK_WIDGET(window)),
-            GTK_STYLE_PROVIDER(provider),
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-        );
+    if (provider && GTK_IS_CSS_PROVIDER(provider)) {
+        auto context = gtk_widget_get_style_context(GTK_WIDGET(window));
+        if (context) {
+            gtk_style_context_add_provider(
+                context,
+                GTK_STYLE_PROVIDER(provider),
+                GTK_STYLE_PROVIDER_PRIORITY_USER // Force override of system themes
+            );
+        }
     }
     
     if (first_run) {

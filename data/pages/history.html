@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>History - Sea Browser</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="sea://resources/font-awesome.css">
     <style>
         * {
             margin: 0;
@@ -63,13 +63,19 @@
         }
 
         .search-box::before {
-            content: '🔍';
+            content: '\f002';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
             position: absolute;
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 14px;
             opacity: 0.5;
+        }
+
+        .search-box input {
+            padding-left: 40px;
         }
 
         /* Buttons */
@@ -264,13 +270,7 @@
 
     <script>
         // History data injected from C++ backend
-        let historyData = {{ HISTORY_DATA }}.map((item, index) => ({
-            id: index,
-            title: item.title || item.url,
-            url: item.url,
-            favicon: '<i class="fa-solid fa-clock-rotate-left"></i>',
-            timestamp: item.timestamp * 1000 // Convert seconds to ms
-        }));
+        let historyData = {{ HISTORY_DATA }};
 
         function formatTime(timestamp) {
             const date = new Date(timestamp);
@@ -295,10 +295,10 @@
         function groupByDate(items) {
             const groups = {};
             items.forEach(item => {
-                const dateKey = new Date(item.timestamp).toDateString();
+                const dateKey = new Date(item.timestamp * 1000).toDateString();
                 if (!groups[dateKey]) {
                     groups[dateKey] = {
-                        label: formatDate(item.timestamp),
+                        label: formatDate(item.timestamp * 1000),
                         items: []
                     };
                 }
@@ -313,7 +313,7 @@
             if (items.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="icon">📜</div>
+                        <div class="icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
                         <h2>No history yet</h2>
                         <p>Pages you visit will appear here.</p>
                     </div>
@@ -334,13 +334,13 @@
                 group.items.forEach(item => {
                     html += `
                         <div class="history-item" onclick="visitPage('${item.url}')">
-                            <div class="favicon">${item.favicon}</div>
+                            <div class="favicon"><i class="fa-solid fa-globe"></i></div>
                             <div class="info">
                                 <div class="title">${item.title}</div>
                                 <div class="url">${item.url}</div>
                             </div>
-                            <div class="time">${formatTime(item.timestamp)}</div>
-                            <button class="delete-btn" onclick="deleteItem(event, ${item.id})">✕</button>
+                            <div class="time">${formatTime(item.timestamp * 1000)}</div>
+                            <button class="delete-btn" onclick="deleteItem(event, '${item.url}')"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     `;
                 });
@@ -358,44 +358,29 @@
             window.location.href = url;
         }
 
-        function deleteItem(event, id) {
+        function deleteItem(event, url) {
             event.stopPropagation();
-            historyData = historyData.filter(item => item.id !== id);
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "deleteHistoryItem",
+                    url: url
+                }));
+            }
+            historyData = historyData.filter(item => item.url !== url);
             renderHistory(historyData);
-            console.log('Deleted history item:', id);
         }
 
         function clearAllHistory() {
             if (confirm('Are you sure you want to clear all browsing history?')) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                        action: "clearHistory"
+                    }));
+                }
                 historyData = [];
                 renderHistory(historyData);
-                console.log('Cleared all history');
             }
         }
-
-        // Search functionality
-        document.getElementById('search').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            if (!query) {
-                renderHistory(historyData);
-                return;
-            }
-
-            const filtered = historyData.filter(item =>
-                item.title.toLowerCase().includes(query) ||
-                item.url.toLowerCase().includes(query)
-            );
-
-            if (filtered.length === 0) {
-                document.getElementById('history-content').innerHTML = `
-                    <div class="no-results">
-                        <p>No results for "${query}"</p>
-                    </div>
-                `;
-            } else {
-                renderHistory(filtered);
-            }
-        });
 
         // Initial render
         renderHistory(historyData);

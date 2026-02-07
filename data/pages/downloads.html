@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Downloads - Sea Browser</title>
+    <link rel="stylesheet" href="sea://resources/font-awesome.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a14;
+            color: #e4e4e4;
+            min-height: 100vh;
+            padding: 32px 48px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e4e4e4;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .downloads-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .download-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .download-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .download-item.in-progress {
+            border-left: 3px solid #3b82f6;
+        }
+
+        .download-item.completed {
+            border-left: 3px solid #10b981;
+        }
+
+        .download-item.failed {
+            border-left: 3px solid #ef4444;
+        }
+
+        .download-item .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .download-item.completed .icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .download-item.failed .icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .download-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .download-item .filename {
+            font-size: 0.95rem;
+            color: #e4e4e4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .download-item .url {
+            font-size: 0.8rem;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 8px;
+        }
+
+        .download-item .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .download-item .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .download-item .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .download-item .progress-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .download-item .status {
+            font-size: 0.8rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .download-item .status.completed {
+            color: #10b981;
+        }
+
+        .download-item .status.failed {
+            color: #ef4444;
+        }
+
+        .download-item .actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 16px;
+        }
+
+        .download-item .action-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            font-size: 14px;
+        }
+
+        .download-item .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .download-item .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+            color: #3b82f6;
+        }
+
+        .empty-state h2 {
+            color: #fff;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Downloads</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openDownloadsFolder()">
+                <i class="fa-solid fa-folder-open"></i> Open Folder
+            </button>
+            <button class="btn btn-danger" onclick="clearCompleted()">
+                <i class="fa-solid fa-trash"></i> Clear Completed
+            </button>
+        </div>
+    </div>
+
+    <div id="downloads-content">
+        <!-- Downloads will be rendered here -->
+    </div>
+
+    <script>
+        let downloadsData = {{ DOWNLOADS_DATA }};
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatSpeed(bytesPerSecond) {
+            return formatBytes(bytesPerSecond) + '/s';
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'pdf': 'fa-file-pdf',
+                'doc': 'fa-file-word',
+                'docx': 'fa-file-word',
+                'xls': 'fa-file-excel',
+                'xlsx': 'fa-file-excel',
+                'ppt': 'fa-file-powerpoint',
+                'pptx': 'fa-file-powerpoint',
+                'jpg': 'fa-file-image',
+                'jpeg': 'fa-file-image',
+                'png': 'fa-file-image',
+                'gif': 'fa-file-image',
+                'mp3': 'fa-file-audio',
+                'wav': 'fa-file-audio',
+                'mp4': 'fa-file-video',
+                'avi': 'fa-file-video',
+                'mkv': 'fa-file-video',
+                'zip': 'fa-file-zipper',
+                'rar': 'fa-file-zipper',
+                '7z': 'fa-file-zipper',
+                'exe': 'fa-gears',
+                'msi': 'fa-gears'
+            };
+            return iconMap[ext] || 'fa-file';
+        }
+
+        function renderDownloads(downloads) {
+            const container = document.getElementById('downloads-content');
+            
+            if (downloads.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon"><i class="fa-solid fa-download"></i></div>
+                        <h2>No downloads yet</h2>
+                        <p>Files you download will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Separate active and completed downloads
+            const active = downloads.filter(d => d.state === 'in-progress');
+            const completed = downloads.filter(d => d.state === 'completed');
+            const failed = downloads.filter(d => d.state === 'failed');
+
+            let html = '';
+
+            // Active downloads
+            if (active.length > 0) {
+                html += `<div class="section-title">Active Downloads</div>`;
+                html += `<div class="downloads-list">`;
+                active.forEach(download => {
+                    const progress = download.totalBytes > 0 
+                        ? (download.receivedBytes / download.totalBytes * 100).toFixed(1)
+                        : 0;
+                    html += `
+                        <div class="download-item in-progress" data-id="${download.id}">
+                            <div class="icon">
+                                <i class="fa-solid ${getFileIcon(download.filename)}"></i>
+                            </div>
+                            <div class="info">
+                                <div class="filename">${download.filename}</div>
+                                <div class="url">${download.url}</div>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${progress}%"></div>
+                                    </div>
+                                    <div class="progress-text">${progress}% - ${formatBytes(download.receivedBytes)} / ${formatBytes(download.totalBytes)}</div>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="pauseDownload('${download.id}')" title="Pause">
+                                    <i class="fa-solid fa-pause"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="cancelDownload('${download.id}')" title="Cancel">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Failed downloads
+            if (failed.length > 0) {
+                html += `<div class="section-title" style="margin-top: 24px;">Failed</div>`;
+                html += `<div class="downloads-list">`;
+                failed.forEach(download => {
+                    html += `
+                        <div class="download-item failed" data-id="${download.id}">
+                            <div class="icon">
+                                <i class="fa-solid ${getFileIcon(download.filename)}"></i>
+                            </div>
+                            <div class="info">
+                                <div class="filename">${download.filename}</div>
+                                <div class="url">${download.url}</div>
+                                <div class="status failed">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    Failed
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="retryDownload('${download.id}')" title="Retry">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="removeDownload('${download.id}')" title="Remove">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Completed downloads
+            if (completed.length > 0) {
+                html += `<div class="section-title" style="margin-top: 24px;">Completed</div>`;
+                html += `<div class="downloads-list">`;
+                completed.forEach(download => {
+                    html += `
+                        <div class="download-item completed" data-id="${download.id}">
+                            <div class="icon">
+                                <i class="fa-solid ${getFileIcon(download.filename)}"></i>
+                            </div>
+                            <div class="info">
+                                <div class="filename">${download.filename}</div>
+                                <div class="url">${download.url}</div>
+                                <div class="status completed">
+                                    <i class="fa-solid fa-check"></i>
+                                    ${formatBytes(download.totalBytes)} • ${new Date(download.endTime).toLocaleString()}
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="openFile('${download.id}')" title="Open">
+                                    <i class="fa-solid fa-folder-open"></i>
+                                </button>
+                                <button class="action-btn" onclick="showInFolder('${download.id}')" title="Show in Folder">
+                                    <i class="fa-solid fa-folder"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="removeDownload('${download.id}')" title="Remove">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function pauseDownload(id) {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "pauseDownload",
+                    id: id
+                }));
+            }
+        }
+
+        function cancelDownload(id) {
+            if (confirm('Cancel this download?')) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                        action: "cancelDownload",
+                        id: id
+                    }));
+                }
+                downloadsData = downloadsData.filter(d => d.id !== id);
+                renderDownloads(downloadsData);
+            }
+        }
+
+        function retryDownload(id) {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "retryDownload",
+                    id: id
+                }));
+            }
+        }
+
+        function removeDownload(id) {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "removeDownload",
+                    id: id
+                }));
+            }
+            downloadsData = downloadsData.filter(d => d.id !== id);
+            renderDownloads(downloadsData);
+        }
+
+        function openFile(id) {
+            const download = downloadsData.find(d => d.id === id);
+            if (download && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "openFile",
+                    path: download.path
+                }));
+            }
+        }
+
+        function showInFolder(id) {
+            const download = downloadsData.find(d => d.id === id);
+            if (download && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "showInFolder",
+                    path: download.path
+                }));
+            }
+        }
+
+        function openDownloadsFolder() {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "openDownloadsFolder"
+                }));
+            }
+        }
+
+        function clearCompleted() {
+            if (confirm('Clear all completed downloads from the list?')) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                        action: "clearCompletedDownloads"
+                    }));
+                }
+                downloadsData = downloadsData.filter(d => d.state === 'in-progress');
+                renderDownloads(downloadsData);
+            }
+        }
+
+        // Update progress periodically
+        function updateProgress() {
+            const activeDownloads = downloadsData.filter(d => d.state === 'in-progress');
+            if (activeDownloads.length > 0) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                        action: "getDownloads"
+                    }));
+                }
+            }
+        }
+
+        // Poll for updates every second
+        setInterval(updateProgress, 1000);
+
+        // Initial render
+        renderDownloads(downloadsData);
+    </script>
+</body>
+</html>

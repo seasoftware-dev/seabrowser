@@ -11,6 +11,7 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(WEBKIT REQUIRED webkit2gtk-4.1)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 pkg_check_modules(X11 REQUIRED x11)
+pkg_check_modules(JSON_GLIB REQUIRED json-glib-1.0)
 
 # Source files
 set(SOURCES
@@ -19,11 +20,14 @@ set(SOURCES
     src/browser_window.cpp
     src/web_view.cpp
     src/tab_manager.cpp
+    src/extension_manager.cpp
     src/settings/settings_manager.cpp
     src/settings/settings_dialog.cpp
     src/privacy/content_blocker.cpp
     src/privacy/cookie_manager.cpp
     src/history/history_manager.cpp
+    src/bookmarks/bookmarks_manager.cpp
+    src/downloads/downloads_manager.cpp
 )
 
 # Create executable
@@ -36,6 +40,7 @@ target_include_directories(seabrowser PRIVATE
     ${WEBKIT_INCLUDE_DIRS}
     ${SQLITE_INCLUDE_DIRS}
     ${X11_INCLUDE_DIRS}
+    ${JSON_GLIB_INCLUDE_DIRS}
 )
 
 # Link libraries
@@ -44,6 +49,7 @@ target_link_libraries(seabrowser PRIVATE
     ${WEBKIT_LIBRARIES}
     ${SQLITE_LIBRARIES}
     ${X11_LIBRARIES}
+    ${JSON_GLIB_LIBRARIES}
 )
 
 # Define source directory for resource loading

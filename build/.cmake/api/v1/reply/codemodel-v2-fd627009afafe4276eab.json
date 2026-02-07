@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-aa34709206d17b952730.json",
+					"jsonFile" : "directory-.-e109adea8a3fdca334d0.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.20"
@@ -40,7 +40,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "seabrowser::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-seabrowser-6347ae9129410393ed2f.json",
+					"jsonFile" : "target-seabrowser-2d4481faad0257ae5605.json",
 					"name" : "seabrowser",
 					"projectIndex" : 0
 				}

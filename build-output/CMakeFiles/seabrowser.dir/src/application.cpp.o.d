@@ -945,25 +945,31 @@ CMakeFiles/seabrowser.dir/src/application.cpp.o: \
  /usr/include/c++/15/pstl/execution_defs.h \
  /home/wyind/Documents/SeaBrowser/src/tab_manager.h \
  /home/wyind/Documents/SeaBrowser/src/web_view.h \
- /home/wyind/Documents/SeaBrowser/src/settings/settings_manager.h \
- /home/wyind/Documents/SeaBrowser/src/history/history_manager.h \
- /usr/include/sqlite3.h /usr/include/c++/15/mutex \
- /usr/include/c++/15/bits/chrono.h /usr/include/c++/15/ratio \
- /usr/include/c++/15/limits /usr/include/c++/15/ctime \
- /usr/include/c++/15/bits/parse_numbers.h \
- /usr/include/c++/15/bits/unique_lock.h /usr/include/c++/15/filesystem \
- /usr/include/c++/15/bits/fs_fwd.h /usr/include/c++/15/bits/fs_path.h \
- /usr/include/c++/15/locale \
+ /home/wyind/Documents/SeaBrowser/src/utils.h /usr/include/c++/15/sstream \
+ /usr/include/c++/15/istream /usr/include/c++/15/ostream \
+ /usr/include/c++/15/bits/ostream.tcc \
+ /usr/include/c++/15/bits/istream.tcc \
+ /usr/include/c++/15/bits/sstream.tcc /usr/include/c++/15/filesystem \
+ /usr/include/c++/15/bits/fs_fwd.h /usr/include/c++/15/bits/chrono.h \
+ /usr/include/c++/15/ratio /usr/include/c++/15/limits \
+ /usr/include/c++/15/ctime /usr/include/c++/15/bits/parse_numbers.h \
+ /usr/include/c++/15/bits/fs_path.h /usr/include/c++/15/locale \
  /usr/include/c++/15/bits/locale_facets_nonio.h \
  /usr/include/c++/15/x86_64-redhat-linux/bits/time_members.h \
  /usr/include/c++/15/x86_64-redhat-linux/bits/messages_members.h \
  /usr/include/libintl.h /usr/include/c++/15/bits/codecvt.h \
  /usr/include/c++/15/bits/locale_facets_nonio.tcc \
  /usr/include/c++/15/bits/locale_conv.h /usr/include/c++/15/iomanip \
- /usr/include/c++/15/bits/quoted_string.h /usr/include/c++/15/sstream \
- /usr/include/c++/15/istream /usr/include/c++/15/ostream \
- /usr/include/c++/15/bits/ostream.tcc \
- /usr/include/c++/15/bits/istream.tcc \
- /usr/include/c++/15/bits/sstream.tcc /usr/include/c++/15/codecvt \
+ /usr/include/c++/15/bits/quoted_string.h /usr/include/c++/15/codecvt \
  /usr/include/c++/15/bits/fs_dir.h /usr/include/c++/15/bits/fs_ops.h \
- /usr/include/c++/15/iostream
+ /usr/include/c++/15/algorithm /usr/include/c++/15/bits/stl_algo.h \
+ /usr/include/c++/15/bits/algorithmfwd.h \
+ /usr/include/c++/15/bits/stl_heap.h \
+ /usr/include/c++/15/bits/uniform_int_dist.h \
+ /usr/include/c++/15/bits/ranges_algo.h \
+ /usr/include/c++/15/pstl/glue_algorithm_defs.h \
+ /home/wyind/Documents/SeaBrowser/src/extension_manager.h \
+ /home/wyind/Documents/SeaBrowser/src/settings/settings_manager.h \
+ /home/wyind/Documents/SeaBrowser/src/history/history_manager.h \
+ /usr/include/sqlite3.h /usr/include/c++/15/mutex \
+ /usr/include/c++/15/bits/unique_lock.h /usr/include/c++/15/iostream

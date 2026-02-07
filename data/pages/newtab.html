@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>New Tab - Sea Browser</title>
+    <link rel="stylesheet" href="sea://resources/font-awesome.css">
     <style>
         * {
             margin: 0;
@@ -150,6 +151,27 @@
             color: #6b7280;
         }
 
+        .search-container {
+            position: relative;
+        }
+
+        .search-container::before {
+            content: '\f002';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .search-box {
+            padding-left: 48px;
+        }
+
         /* Quick Links */
         .shortcuts {
             display: grid;
@@ -272,10 +294,6 @@
                 opacity: 1;
             }
         }
-
-        .privacy-badge::before {
-            content: '🛡️';
-        }
     </style>
 </head>
 
@@ -305,27 +323,27 @@
 
         <!-- Search -->
         <div class="search-container">
-            <form action="{{SEARCH_URL}}" method="get" id="searchForm">
-                <input type="text" name="q" class="search-box" placeholder="Search the web privately..." autofocus>
+            <form id="searchForm">
+                <input type="text" id="searchInput" class="search-box" placeholder="Search the web privately..." autofocus>
             </form>
         </div>
 
         <!-- Quick Links -->
         <div class="shortcuts">
             <a href="sea://settings" class="shortcut">
-                <div class="shortcut-icon">⚙️</div>
+                <div class="shortcut-icon"><i class="fa-solid fa-gear"></i></div>
                 <span class="shortcut-title">Settings</span>
             </a>
             <a href="sea://history" class="shortcut">
-                <div class="shortcut-icon">📜</div>
+                <div class="shortcut-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
                 <span class="shortcut-title">History</span>
             </a>
             <a href="sea://extensions" class="shortcut">
-                <div class="shortcut-icon">🧩</div>
+                <div class="shortcut-icon"><i class="fa-solid fa-puzzle-piece"></i></div>
                 <span class="shortcut-title">Extensions</span>
             </a>
             <a href="https://duckduckgo.com" class="shortcut">
-                <div class="shortcut-icon">🦆</div>
+                <div class="shortcut-icon"><i class="fa-solid fa-earth-americas"></i></div>
                 <span class="shortcut-title">DuckDuckGo</span>
             </a>
         </div>
@@ -340,15 +358,17 @@
     </div>
 
     <div class="privacy-badge">
-        Tracking Protection Active
+        <i class="fa-solid fa-shield-halved"></i> Tracking Protection Active
     </div>
 
     <script>
+        const SEARCH_URL_BASE = '{{SEARCH_URL}}';
+
         document.getElementById('searchForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            const query = this.querySelector('input').value;
+            const query = document.getElementById('searchInput').value;
             if (query.trim()) {
-                const searchUrl = '{{SEARCH_URL}}' + encodeURIComponent(query);
+                const searchUrl = SEARCH_URL_BASE + encodeURIComponent(query);
                 window.location.href = searchUrl;
             }
         });

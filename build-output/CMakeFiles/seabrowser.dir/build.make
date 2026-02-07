@@ -142,10 +142,24 @@ CMakeFiles/seabrowser.dir/src/tab_manager.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/seabrowser.dir/src/tab_manager.cpp.s"
 	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/wyind/Documents/SeaBrowser/src/tab_manager.cpp -o CMakeFiles/seabrowser.dir/src/tab_manager.cpp.s
 
+CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o: CMakeFiles/seabrowser.dir/flags.make
+CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o: /home/wyind/Documents/SeaBrowser/src/extension_manager.cpp
+CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o: CMakeFiles/seabrowser.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o"
+	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o -MF CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o.d -o CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o -c /home/wyind/Documents/SeaBrowser/src/extension_manager.cpp
+
+CMakeFiles/seabrowser.dir/src/extension_manager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/seabrowser.dir/src/extension_manager.cpp.i"
+	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/wyind/Documents/SeaBrowser/src/extension_manager.cpp > CMakeFiles/seabrowser.dir/src/extension_manager.cpp.i
+
+CMakeFiles/seabrowser.dir/src/extension_manager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/seabrowser.dir/src/extension_manager.cpp.s"
+	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/wyind/Documents/SeaBrowser/src/extension_manager.cpp -o CMakeFiles/seabrowser.dir/src/extension_manager.cpp.s
+
 CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o: CMakeFiles/seabrowser.dir/flags.make
 CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o: /home/wyind/Documents/SeaBrowser/src/settings/settings_manager.cpp
 CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o: CMakeFiles/seabrowser.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o"
 	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o -MF CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o.d -o CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o -c /home/wyind/Documents/SeaBrowser/src/settings/settings_manager.cpp
 
 CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.i: cmake_force
@@ -159,7 +173,7 @@ CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.s: cmake_force
 CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o: CMakeFiles/seabrowser.dir/flags.make
 CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o: /home/wyind/Documents/SeaBrowser/src/settings/settings_dialog.cpp
 CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o: CMakeFiles/seabrowser.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o"
 	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o -MF CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o.d -o CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o -c /home/wyind/Documents/SeaBrowser/src/settings/settings_dialog.cpp
 
 CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.i: cmake_force
@@ -173,7 +187,7 @@ CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.s: cmake_force
 CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o: CMakeFiles/seabrowser.dir/flags.make
 CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o: /home/wyind/Documents/SeaBrowser/src/privacy/content_blocker.cpp
 CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o: CMakeFiles/seabrowser.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o"
 	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o -MF CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o.d -o CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o -c /home/wyind/Documents/SeaBrowser/src/privacy/content_blocker.cpp
 
 CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.i: cmake_force
@@ -187,7 +201,7 @@ CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.s: cmake_force
 CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o: CMakeFiles/seabrowser.dir/flags.make
 CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o: /home/wyind/Documents/SeaBrowser/src/privacy/cookie_manager.cpp
 CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o: CMakeFiles/seabrowser.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o"
 	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o -MF CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o.d -o CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.o -c /home/wyind/Documents/SeaBrowser/src/privacy/cookie_manager.cpp
 
 CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.i: cmake_force
@@ -201,7 +215,7 @@ CMakeFiles/seabrowser.dir/src/privacy/cookie_manager.cpp.s: cmake_force
 CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o: CMakeFiles/seabrowser.dir/flags.make
 CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o: /home/wyind/Documents/SeaBrowser/src/history/history_manager.cpp
 CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o: CMakeFiles/seabrowser.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o"
 	/usr/lib64/ccache/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o -MF CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o.d -o CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o -c /home/wyind/Documents/SeaBrowser/src/history/history_manager.cpp
 
 CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.i: cmake_force
@@ -219,6 +233,7 @@ seabrowser_OBJECTS = \
 "CMakeFiles/seabrowser.dir/src/browser_window.cpp.o" \
 "CMakeFiles/seabrowser.dir/src/web_view.cpp.o" \
 "CMakeFiles/seabrowser.dir/src/tab_manager.cpp.o" \
+"CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o" \
 "CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o" \
 "CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o" \
 "CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o" \
@@ -233,6 +248,7 @@ seabrowser: CMakeFiles/seabrowser.dir/src/application.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/src/browser_window.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/src/web_view.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/src/tab_manager.cpp.o
+seabrowser: CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/src/settings/settings_manager.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/src/settings/settings_dialog.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o
@@ -241,7 +257,7 @@ seabrowser: CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o
 seabrowser: CMakeFiles/seabrowser.dir/build.make
 seabrowser: CMakeFiles/seabrowser.dir/compiler_depend.ts
 seabrowser: CMakeFiles/seabrowser.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable seabrowser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/wyind/Documents/SeaBrowser/build-output/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable seabrowser"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/seabrowser.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

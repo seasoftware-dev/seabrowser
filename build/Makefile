@@ -218,6 +218,30 @@ src/application.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/application.cpp.s
 .PHONY : src/application.cpp.s
 
+src/bookmarks/bookmarks_manager.o: src/bookmarks/bookmarks_manager.cpp.o
+.PHONY : src/bookmarks/bookmarks_manager.o
+
+# target to build an object file
+src/bookmarks/bookmarks_manager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/bookmarks/bookmarks_manager.cpp.o
+.PHONY : src/bookmarks/bookmarks_manager.cpp.o
+
+src/bookmarks/bookmarks_manager.i: src/bookmarks/bookmarks_manager.cpp.i
+.PHONY : src/bookmarks/bookmarks_manager.i
+
+# target to preprocess a source file
+src/bookmarks/bookmarks_manager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/bookmarks/bookmarks_manager.cpp.i
+.PHONY : src/bookmarks/bookmarks_manager.cpp.i
+
+src/bookmarks/bookmarks_manager.s: src/bookmarks/bookmarks_manager.cpp.s
+.PHONY : src/bookmarks/bookmarks_manager.s
+
+# target to generate assembly for a file
+src/bookmarks/bookmarks_manager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/bookmarks/bookmarks_manager.cpp.s
+.PHONY : src/bookmarks/bookmarks_manager.cpp.s
+
 src/browser_window.o: src/browser_window.cpp.o
 .PHONY : src/browser_window.o
 
@@ -241,6 +265,54 @@ src/browser_window.s: src/browser_window.cpp.s
 src/browser_window.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/browser_window.cpp.s
 .PHONY : src/browser_window.cpp.s
+
+src/downloads/downloads_manager.o: src/downloads/downloads_manager.cpp.o
+.PHONY : src/downloads/downloads_manager.o
+
+# target to build an object file
+src/downloads/downloads_manager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/downloads/downloads_manager.cpp.o
+.PHONY : src/downloads/downloads_manager.cpp.o
+
+src/downloads/downloads_manager.i: src/downloads/downloads_manager.cpp.i
+.PHONY : src/downloads/downloads_manager.i
+
+# target to preprocess a source file
+src/downloads/downloads_manager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/downloads/downloads_manager.cpp.i
+.PHONY : src/downloads/downloads_manager.cpp.i
+
+src/downloads/downloads_manager.s: src/downloads/downloads_manager.cpp.s
+.PHONY : src/downloads/downloads_manager.s
+
+# target to generate assembly for a file
+src/downloads/downloads_manager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/downloads/downloads_manager.cpp.s
+.PHONY : src/downloads/downloads_manager.cpp.s
+
+src/extension_manager.o: src/extension_manager.cpp.o
+.PHONY : src/extension_manager.o
+
+# target to build an object file
+src/extension_manager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o
+.PHONY : src/extension_manager.cpp.o
+
+src/extension_manager.i: src/extension_manager.cpp.i
+.PHONY : src/extension_manager.i
+
+# target to preprocess a source file
+src/extension_manager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/extension_manager.cpp.i
+.PHONY : src/extension_manager.cpp.i
+
+src/extension_manager.s: src/extension_manager.cpp.s
+.PHONY : src/extension_manager.s
+
+# target to generate assembly for a file
+src/extension_manager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/seabrowser.dir/build.make CMakeFiles/seabrowser.dir/src/extension_manager.cpp.s
+.PHONY : src/extension_manager.cpp.s
 
 src/history/history_manager.o: src/history/history_manager.cpp.o
 .PHONY : src/history/history_manager.o
@@ -452,9 +524,18 @@ help:
 	@echo "... src/application.o"
 	@echo "... src/application.i"
 	@echo "... src/application.s"
+	@echo "... src/bookmarks/bookmarks_manager.o"
+	@echo "... src/bookmarks/bookmarks_manager.i"
+	@echo "... src/bookmarks/bookmarks_manager.s"
 	@echo "... src/browser_window.o"
 	@echo "... src/browser_window.i"
 	@echo "... src/browser_window.s"
+	@echo "... src/downloads/downloads_manager.o"
+	@echo "... src/downloads/downloads_manager.i"
+	@echo "... src/downloads/downloads_manager.s"
+	@echo "... src/extension_manager.o"
+	@echo "... src/extension_manager.i"
+	@echo "... src/extension_manager.s"
 	@echo "... src/history/history_manager.o"
 	@echo "... src/history/history_manager.i"
 	@echo "... src/history/history_manager.s"

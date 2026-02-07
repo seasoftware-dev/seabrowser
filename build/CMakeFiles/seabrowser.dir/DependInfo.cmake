@@ -9,7 +9,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/wyind/Documents/SeaBrowser/src/application.cpp" "CMakeFiles/seabrowser.dir/src/application.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/application.cpp.o.d"
+  "/home/wyind/Documents/SeaBrowser/src/bookmarks/bookmarks_manager.cpp" "CMakeFiles/seabrowser.dir/src/bookmarks/bookmarks_manager.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/bookmarks/bookmarks_manager.cpp.o.d"
   "/home/wyind/Documents/SeaBrowser/src/browser_window.cpp" "CMakeFiles/seabrowser.dir/src/browser_window.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/browser_window.cpp.o.d"
+  "/home/wyind/Documents/SeaBrowser/src/downloads/downloads_manager.cpp" "CMakeFiles/seabrowser.dir/src/downloads/downloads_manager.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/downloads/downloads_manager.cpp.o.d"
+  "/home/wyind/Documents/SeaBrowser/src/extension_manager.cpp" "CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o.d"
   "/home/wyind/Documents/SeaBrowser/src/history/history_manager.cpp" "CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o.d"
   "/home/wyind/Documents/SeaBrowser/src/main.cpp" "CMakeFiles/seabrowser.dir/src/main.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/main.cpp.o.d"
   "/home/wyind/Documents/SeaBrowser/src/privacy/content_blocker.cpp" "CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o" "gcc" "CMakeFiles/seabrowser.dir/src/privacy/content_blocker.cpp.o.d"

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Bookmarks - Sea Browser</title>
+    <link rel="stylesheet" href="sea://resources/font-awesome.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a14;
+            color: #e4e4e4;
+            min-height: 100vh;
+            padding: 32px 48px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            padding: 10px 16px 10px 40px;
+            font-size: 0.9rem;
+            width: 280px;
+            transition: all 0.15s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-box::before {
+            content: '\f002';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.5;
+        }
+
+        .search-box input {
+            padding-left: 40px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .folder-section {
+            margin-bottom: 32px;
+        }
+
+        .folder-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #3b82f6;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .folder-header i {
+            font-size: 14px;
+        }
+
+        .bookmark-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .bookmark-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .bookmark-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .bookmark-item .favicon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .bookmark-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bookmark-item .title {
+            font-size: 0.9rem;
+            color: #e4e4e4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .bookmark-item .url {
+            font-size: 0.75rem;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bookmark-item .actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .bookmark-item:hover .actions {
+            opacity: 1;
+        }
+
+        .bookmark-item .action-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .bookmark-item .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .bookmark-item .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+            color: #3b82f6;
+        }
+
+        .empty-state h2 {
+            color: #fff;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Add bookmark modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal h2 {
+            color: #fff;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bookmarks</h1>
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search bookmarks..." oninput="filterBookmarks()">
+            </div>
+            <button class="btn btn-primary" onclick="showAddModal()">
+                <i class="fa-solid fa-plus"></i> Add Bookmark
+            </button>
+        </div>
+    </div>
+
+    <div id="bookmarks-content">
+        <!-- Bookmarks will be rendered here -->
+    </div>
+
+    <!-- Add Bookmark Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h2>Add Bookmark</h2>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="bookmarkName" placeholder="Bookmark name">
+            </div>
+            <div class="form-group">
+                <label>URL</label>
+                <input type="text" id="bookmarkUrl" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+                <label>Folder</label>
+                <select id="bookmarkFolder">
+                    <option value="Bookmarks Bar">Bookmarks Bar</option>
+                    <option value="Other Bookmarks">Other Bookmarks</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="hideAddModal()" style="background: transparent; color: #9ca3af;">Cancel</button>
+                <button class="btn btn-primary" onclick="addBookmark()">Add Bookmark</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookmarksData = {{ BOOKMARKS_DATA }};
+
+        function renderBookmarks(bookmarks) {
+            const container = document.getElementById('bookmarks-content');
+            
+            if (bookmarks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon"><i class="fa-solid fa-bookmark"></i></div>
+                        <h2>No bookmarks yet</h2>
+                        <p>Save your favorite pages for quick access.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group by folder
+            const folders = {};
+            bookmarks.forEach(bm => {
+                const folder = bm.folder || 'Other Bookmarks';
+                if (!folders[folder]) folders[folder] = [];
+                folders[folder].push(bm);
+            });
+
+            let html = '';
+            for (const [folderName, items] of Object.entries(folders)) {
+                html += `
+                    <div class="folder-section">
+                        <div class="folder-header">
+                            <i class="fa-solid fa-folder"></i>
+                            ${folderName}
+                        </div>
+                        <div class="bookmark-grid">
+                `;
+                
+                items.forEach(item => {
+                    html += `
+                        <div class="bookmark-item" onclick="visitPage('${item.url}')">
+                            <div class="favicon">
+                                <i class="fa-solid fa-globe"></i>
+                            </div>
+                            <div class="info">
+                                <div class="title">${item.title}</div>
+                                <div class="url">${item.url}</div>
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="editBookmark(event, '${item.id}')" title="Edit">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteBookmark(event, '${item.id}')" title="Delete">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function visitPage(url) {
+            window.location.href = url;
+        }
+
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('bookmarkName').focus();
+        }
+
+        function hideAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('bookmarkName').value = '';
+            document.getElementById('bookmarkUrl').value = '';
+        }
+
+        function addBookmark() {
+            const name = document.getElementById('bookmarkName').value;
+            const url = document.getElementById('bookmarkUrl').value;
+            const folder = document.getElementById('bookmarkFolder').value;
+            
+            if (!name || !url) return;
+            
+            const newBookmark = {
+                id: Date.now().toString(),
+                title: name,
+                url: url,
+                folder: folder,
+                dateAdded: Date.now()
+            };
+            
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                    action: "addBookmark",
+                    bookmark: newBookmark
+                }));
+            }
+            
+            bookmarksData.push(newBookmark);
+            renderBookmarks(bookmarksData);
+            hideAddModal();
+        }
+
+        function deleteBookmark(event, id) {
+            event.stopPropagation();
+            if (confirm('Delete this bookmark?')) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                        action: "deleteBookmark",
+                        id: id
+                    }));
+                }
+                bookmarksData = bookmarksData.filter(bm => bm.id !== id);
+                renderBookmarks(bookmarksData);
+            }
+        }
+
+        function editBookmark(event, id) {
+            event.stopPropagation();
+            const bookmark = bookmarksData.find(bm => bm.id === id);
+            if (!bookmark) return;
+            
+            const newTitle = prompt('Edit bookmark name:', bookmark.title);
+            if (newTitle !== null && newTitle !== bookmark.title) {
+                bookmark.title = newTitle;
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
+                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
+                        action: "updateBookmark",
+                        bookmark: bookmark
+                    }));
+                }
+                renderBookmarks(bookmarksData);
+            }
+        }
+
+        function filterBookmarks() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filtered = bookmarksData.filter(bm => 
+                bm.title.toLowerCase().includes(query) || 
+                bm.url.toLowerCase().includes(query)
+            );
+            renderBookmarks(filtered);
+        }
+
+        // Close modal on overlay click
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) hideAddModal();
+        });
+
+        // Initial render
+        renderBookmarks(bookmarksData);
+    </script>
+</body>
+</html>

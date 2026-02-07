@@ -4,6 +4,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/seabrowser.dir/src/application.cpp.o.d"
   "CMakeFiles/seabrowser.dir/src/browser_window.cpp.o"
   "CMakeFiles/seabrowser.dir/src/browser_window.cpp.o.d"
+  "CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o"
+  "CMakeFiles/seabrowser.dir/src/extension_manager.cpp.o.d"
   "CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o"
   "CMakeFiles/seabrowser.dir/src/history/history_manager.cpp.o.d"
   "CMakeFiles/seabrowser.dir/src/main.cpp.o"
