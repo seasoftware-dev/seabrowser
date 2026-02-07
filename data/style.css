@@ -1,0 +1,212 @@
+/* Main Window */
+window {
+    background-color: #050b18;
+    color: #f8fafc;
+}
+
+/* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
+headerbar.blue-titlebar {
+    background-color: #2563eb !important;
+    background-image: linear-gradient(to bottom, #2563eb, #1e40af) !important;
+    border-bottom: 1px solid #1d4ed8 !important;
+    padding: 0 6px;
+    min-height: 42px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* All headerbar buttons */
+headerbar.blue-titlebar button {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    padding: 6px;
+    margin: 0 2px;
+    transition: all 0.2s ease;
+}
+
+headerbar.blue-titlebar button:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+headerbar.blue-titlebar button:active {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Window Control Buttons (Min, Max, Close) */
+headerbar.blue-titlebar .win-control-btn {
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 0 !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    opacity: 0.8;
+}
+
+headerbar.blue-titlebar .win-control-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    opacity: 1;
+}
+
+headerbar.blue-titlebar .win-control-btn.close-btn:hover {
+    background: #ef4444 !important;
+}
+
+/* URL Entry - Frosted Glass Look */
+headerbar.blue-titlebar entry {
+    background-color: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    padding: 4px 12px;
+    font-size: 13px;
+    min-height: 28px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+entry:focus {
+    border-color: rgba(37, 99, 235, 0.5);
+    background-color: rgba(28, 33, 40, 0.95);
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.2),
+        0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+entry selection {
+    background-color: #2563eb;
+    color: #fff;
+}
+
+entry image {
+    opacity: 0.6;
+}
+
+/* Tab Bar (Notebook) - Sleek Design */
+notebook {
+    background-color: #050b18;
+}
+
+notebook header {
+    background-color: rgba(13, 17, 23, 0.9);
+    border: none;
+    padding: 4px 8px 0 8px;
+}
+
+notebook header.top {
+    border-bottom: 1px solid #1d4ed8;
+}
+
+notebook tab {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    border: none;
+    padding: 8px 16px;
+    margin: 0 1px;
+    border-radius: 8px 8px 0 0;
+    transition: all 200ms ease;
+}
+
+notebook tab:checked {
+    background: rgba(37, 99, 235, 0.1);
+    color: #fff;
+    border-bottom: 2px solid #2563eb;
+}
+
+notebook tab:hover:not(:checked) {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Tab Close Button */
+notebook tab button {
+    all: unset;
+    padding: 2px;
+    min-width: 16px;
+    min-height: 16px;
+    border-radius: 4px;
+    opacity: 0.5;
+    transition: all 150ms ease;
+}
+
+notebook tab button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+/* Separator */
+separator {
+    background-color: rgba(255, 255, 255, 0.06);
+    min-width: 1px;
+    margin: 6px 8px;
+}
+
+/* Menu - Blurred Popup */
+menu {
+    background-color: rgba(13, 17, 23, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+menuitem {
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: #f8fafc;
+    transition: all 150ms ease;
+}
+
+menuitem:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #fff;
+}
+
+/* Scrollbars - Minimal */
+scrollbar {
+    background: transparent;
+}
+
+scrollbar slider {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    min-width: 6px;
+    min-height: 30px;
+    transition: background 200ms ease;
+}
+
+scrollbar slider:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Spinner */
+spinner {
+    color: #2563eb;
+}
+
+/* Button groups - linked style */
+.linked button {
+    margin: 0;
+    border-radius: 0;
+}
+
+.linked button:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.linked button:last-child {
+    border-radius: 0 6px 6px 0;
+}
+
+.linked button:only-child {
+    border-radius: 6px;
+}
+
+/* Privacy Mode Indicators */
+.incognito headerbar {
+    background: linear-gradient(180deg, rgba(88, 28, 135, 0.9) 0%, rgba(13, 17, 23, 0.9) 100%);
+}
+
+.tor-mode headerbar {
+    background: linear-gradient(180deg, rgba(126, 34, 206, 0.9) 0%, rgba(13, 17, 23, 0.9) 100%);
+}

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome - Sea Browser Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(-45deg, #0a0a14, #0d1117, #161b22, #0a0a14);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .wizard-container {
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 48px;
+            border-radius: 20px;
+            width: 520px;
+            text-align: center;
+            box-shadow:
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(59, 130, 246, 0.1);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Animated Logo */
+        .logo-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .logo-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-wave {
+            animation: wave 2s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: #8b949e;
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-align: left;
+        }
+
+        .option:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateX(4px);
+        }
+
+        .option.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .option-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .option-text strong {
+            display: block;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .option-text small {
+            color: #8b949e;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #8b949e;
+            box-shadow: none;
+            margin-left: 12px;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            box-shadow: none;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #3b82f6;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 4.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 1.5s;"></div>
+    </div>
+
+    <div class="wizard-container">
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot1"></div>
+            <div class="step-dot" id="dot2"></div>
+            <div class="step-dot" id="dot3"></div>
+        </div>
+
+        <!-- Step 1: Welcome -->
+        <div id="step1" class="step active">
+            <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3b82f6" />
+                            <stop offset="100%" style="stop-color:#1d4ed8" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="48" fill="url(#logoGrad)" />
+                    <!-- Stylized Sea 'Z' / Wave -->
+                    <path class="logo-wave" d="M25 40 C 45 40, 55 60, 75 60 M25 40 L75 40 M25 60 L75 60"
+                        style="display:none;" /> <!-- Hidden helper -->
+                    <path class="logo-wave" d="M30 40 Q 50 20, 70 40 T 70 60 Q 50 80, 30 60" fill="none"
+                        stroke="#60a5fa" stroke-width="10" stroke-linecap="round" />
+                </svg>
+            </div>
+            <h1>Welcome to Sea Browser</h1>
+            <p>Experience a faster, more private web.</p>
+            <button class="btn" onclick="nextStep(2)">Get Started</button>
+        </div>
+
+        <!-- Step 2: Privacy Settings -->
+        <div id="step2" class="step">
+            <h2>Privacy Level</h2>
+            <p>Choose how Sea Browser protects you.</p>
+            <div class="options">
+                <div class="option selected" onclick="selectOption(this, 'standard')">
+                    <div class="option-icon">🛡️</div>
+                    <div class="option-text">
+                        <strong>Standard</strong>
+                        <small>Block trackers and dangerous sites</small>
+                    </div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'strict')">
+                    <div class="option-icon">🔒</div>
+                    <div class="option-text">
+                        <strong>Strict</strong>
+                        <small>Maximum privacy, may break some sites</small>
+                    </div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'custom')">
+                    <div class="option-icon">⚙️</div>
+                    <div class="option-text">
+                        <strong>Custom</strong>
+                        <small>Configure in settings later</small>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" onclick="nextStep(3)">Continue</button>
+        </div>
+
+        <!-- Step 3: Search Engine -->
+        <div id="step3" class="step">
+            <h2>Default Search Engine</h2>
+            <p>Choose your preferred search engine.</p>
+            <div class="options">
+                <div class="option selected" onclick="selectOption(this, 'duckduckgo')">
+                    <div class="option-icon">🦆</div>
+                    <div class="option-text">
+                        <strong>DuckDuckGo</strong>
+                        <small>Privacy-focused search</small>
+                    </div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'brave')">
+                    <div class="option-icon">🦁</div>
+                    <div class="option-text">
+                        <strong>Brave Search</strong>
+                        <small>Independent, private</small>
+                    </div>
+                </div>
+                <div class="option" onclick="selectOption(this, 'google')">
+                    <div class="option-icon">🔍</div>
+                    <div class="option-text">
+                        <strong>Google</strong>
+                        <small>Most comprehensive results</small>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" onclick="finishSetup()">Start Browsing</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        function nextStep(step) {
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step-dot').forEach(dot => dot.classList.remove('active'));
+
+            document.getElementById('step' + step).classList.add('active');
+            document.getElementById('dot' + step).classList.add('active');
+            currentStep = step;
+        }
+
+        function selectOption(el, value) {
+            el.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            console.log('Selected:', value);
+        }
+
+        function finishSetup() {
+            window.location = 'sea://newtab';
+        }
+    </script>
+</body>
+
+</html>

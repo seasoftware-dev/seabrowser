@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>New Tab - Sea Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(-45deg, #0a0a14, #0d1117, #161b22, #0a0a14);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #e4e4e4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Subtle Grid Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        /* Animated Logo */
+        .logo-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 32px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .logo-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 20px rgba(59, 130, 246, 0.4));
+        }
+
+        .logo-wave {
+            animation: wave 2s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        /* Search Box */
+        .search-container {
+            position: relative;
+            margin-bottom: 48px;
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 580px;
+            padding: 16px 24px;
+            font-size: 1rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-box:focus {
+            border-color: #3b82f6;
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-box::placeholder {
+            color: #6b7280;
+        }
+
+        /* Quick Links */
+        .shortcuts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+            animation: slideUp 0.6s ease-out 0.4s both;
+        }
+
+        .shortcut {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #e4e4e4;
+        }
+
+        .shortcut:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+        }
+
+        .shortcut-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .shortcut-title {
+            font-size: 0.85rem;
+            color: #8b949e;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* Recent Sites */
+        .recent-section {
+            margin-top: 48px;
+            animation: slideUp 0.6s ease-out 0.6s both;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .recent-sites {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .site-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #e4e4e4;
+        }
+
+        .site-card:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .site-icon {
+            font-size: 1rem;
+        }
+
+        /* Privacy Badge */
+        .privacy-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(13, 17, 23, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #8b949e;
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .privacy-badge::before {
+            content: '🛡️';
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <!-- Animated Logo -->
+        <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3b82f6" />
+                        <stop offset="100%" style="stop-color:#1d4ed8" />
+                    </linearGradient>
+                    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#60a5fa" />
+                        <stop offset="100%" style="stop-color:#3b82f6" />
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" fill="url(#oceanGrad)" opacity="0.9" />
+                <g class="logo-wave">
+                    <path d="M30 35 Q50 25, 70 35 Q50 45, 30 55 Q50 65, 70 55" fill="none" stroke="url(#waveGrad)"
+                        stroke-width="6" stroke-linecap="round" />
+                </g>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(96,165,250,0.3)" stroke-width="2" />
+            </svg>
+        </div>
+
+        <!-- Search -->
+        <div class="search-container">
+            <form action="{{SEARCH_URL}}" method="get" id="searchForm">
+                <input type="text" name="q" class="search-box" placeholder="Search the web privately..." autofocus>
+            </form>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="shortcuts">
+            <a href="sea://settings" class="shortcut">
+                <div class="shortcut-icon">⚙️</div>
+                <span class="shortcut-title">Settings</span>
+            </a>
+            <a href="sea://history" class="shortcut">
+                <div class="shortcut-icon">📜</div>
+                <span class="shortcut-title">History</span>
+            </a>
+            <a href="sea://extensions" class="shortcut">
+                <div class="shortcut-icon">🧩</div>
+                <span class="shortcut-title">Extensions</span>
+            </a>
+            <a href="https://duckduckgo.com" class="shortcut">
+                <div class="shortcut-icon">🦆</div>
+                <span class="shortcut-title">DuckDuckGo</span>
+            </a>
+        </div>
+
+        <!-- Recent Sites -->
+        <div class="recent-section">
+            <div class="section-title">Recently Visited</div>
+            <div class="recent-sites">
+                {{RECENT_SITES}}
+            </div>
+        </div>
+    </div>
+
+    <div class="privacy-badge">
+        Tracking Protection Active
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const query = this.querySelector('input').value;
+            if (query.trim()) {
+                const searchUrl = '{{SEARCH_URL}}' + encodeURIComponent(query);
+                window.location.href = searchUrl;
+            }
+        });
+    </script>
+</body>
+
+</html>

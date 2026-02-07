@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Extensions - Sea Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a14;
+            color: #e4e4e4;
+            min-height: 100vh;
+            padding: 32px 48px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e4e4e4;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #8b949e;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .tab.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
+        /* Extensions Grid */
+        .extensions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .extension-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .extension-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .extension-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .extension-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .extension-info {
+            flex: 1;
+        }
+
+        .extension-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .extension-author {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .extension-description {
+            font-size: 0.85rem;
+            color: #8b949e;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .extension-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .extension-version {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: #22c55e;
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        /* Store Section */
+        .store-section {
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .store-section h2 {
+            font-size: 1.25rem;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .store-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .store-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .store-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+
+        .store-card .store-icon {
+            font-size: 40px;
+        }
+
+        .store-card h3 {
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .store-card p {
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        .empty-state h2 {
+            color: #fff;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        /* Badge */
+        .badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .badge-new {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .badge-featured {
+            background: rgba(234, 179, 8, 0.2);
+            color: #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Extensions</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="toggleDevMode()">
+                <i class="fa-solid fa-code"></i> Developer Mode
+            </button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="installed">Installed</div>
+        <div class="tab" data-tab="recommended">Recommended</div>
+    </div>
+
+    <div id="installed-content" class="tab-content">
+        <div class="extensions-grid">
+            <!-- uBlock Origin -->
+            <div class="extension-card">
+                <div class="extension-header">
+                    <div class="extension-icon"><i class="fa-solid fa-shield"></i></div>
+                    <div class="extension-info">
+                        <div class="extension-name">uBlock Origin</div>
+                        <div class="extension-author">Raymond Hill</div>
+                    </div>
+                </div>
+                <div class="extension-description">
+                    An efficient blocker: easy on memory and CPU footprint, yet can load and enforce thousands of
+                    filters.
+                </div>
+                <div class="extension-footer">
+                    <span class="extension-version">v1.55.0</span>
+                    <label class="toggle">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Privacy Badger -->
+            <div class="extension-card">
+                <div class="extension-header">
+                    <div class="extension-icon"><i class="fa-solid fa-paw"></i></div>
+                    <div class="extension-info">
+                        <div class="extension-name">Privacy Badger</div>
+                        <div class="extension-author">EFF</div>
+                    </div>
+                </div>
+                <div class="extension-description">
+                    Automatically learns to block invisible trackers based on their behavior.
+                </div>
+                <div class="extension-footer">
+                    <span class="extension-version">v2023.12.1</span>
+                    <label class="toggle">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- HTTPS Everywhere -->
+            <div class="extension-card">
+                <div class="extension-header">
+                    <div class="extension-icon"><i class="fa-solid fa-lock"></i></div>
+                    <div class="extension-info">
+                        <div class="extension-name">HTTPS Everywhere</div>
+                        <div class="extension-author">EFF</div>
+                    </div>
+                </div>
+                <div class="extension-description">
+                    Encrypts your communications with many websites, making browsing more secure.
+                </div>
+                <div class="extension-footer">
+                    <span class="extension-version">v2021.7.13</span>
+                    <label class="toggle">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Bitwarden -->
+            <div class="extension-card">
+                <div class="extension-header">
+                    <div class="extension-icon"><i class="fa-solid fa-key"></i></div>
+                    <div class="extension-info">
+                        <div class="extension-name">Bitwarden</div>
+                        <div class="extension-author">Bitwarden Inc.</div>
+                    </div>
+                </div>
+                <div class="extension-description">
+                    A secure and free password manager for all your devices.
+                </div>
+                <div class="extension-footer">
+                    <span class="extension-version">v2024.1.0</span>
+                    <label class="toggle">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="recommended-content" class="tab-content" style="display: none;">
+        <div class="extensions-grid">
+            <div class="extension-card">
+                <div class="extension-header">
+                    <div class="extension-icon"><i class="fa-solid fa-moon"></i></div>
+                    <div class="extension-info">
+                        <div class="extension-name">Dark Reader <span class="badge badge-featured">Featured</span></div>
+                        <div class="extension-author">darkreader.org</div>
+                    </div>
+                </div>
+                <div class="extension-description">
+                    Dark mode for every website. Take care of your eyes, use dark theme for night and daily browsing.
+                </div>
+                <div class="extension-footer">
+                    <span class="extension-version">v4.9.73</span>
+                    <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;">Install</button>
+                </div>
+            </div>
+
+            <div class="extension-card">
+                <div class="extension-header">
+                    <div class="extension-icon"><i class="fa-solid fa-bookmark"></i></div>
+                    <div class="extension-info">
+                        <div class="extension-name">Notion Web Clipper <span class="badge badge-new">New</span></div>
+                        <div class="extension-author">Notion Labs</div>
+                    </div>
+                </div>
+                <div class="extension-description">
+                    Save web content to Notion with a single click. Organize bookmarks, articles, and more.
+                </div>
+                <div class="extension-footer">
+                    <span class="extension-version">v1.0.5</span>
+                    <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;">Install</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Get More Extensions -->
+    <div class="store-section">
+        <h2>Get More Extensions</h2>
+        <div class="store-cards">
+            <a href="https://chrome.google.com/webstore/category/extensions" class="store-card" target="_blank">
+                <div class="store-icon"><i class="fa-brands fa-chrome"></i></div>
+                <div>
+                    <h3>Chrome Web Store</h3>
+                    <p>Browse thousands of extensions</p>
+                </div>
+            </a>
+            <a href="https://addons.mozilla.org/firefox/extensions/" class="store-card" target="_blank">
+                <div class="store-icon"><i class="fa-brands fa-firefox"></i></div>
+                <div>
+                    <h3>Firefox Add-ons</h3>
+                    <p>Discover privacy-focused extensions</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(tabName + '-content').style.display = 'block';
+            });
+        });
+
+        // Toggle extension
+        document.querySelectorAll('.toggle input').forEach(toggle => {
+            toggle.addEventListener('change', () => {
+                const card = toggle.closest('.extension-card');
+                const name = card.querySelector('.extension-name').textContent;
+                const status = toggle.checked ? 'enabled' : 'disabled';
+                console.log(`Extension ${name} ${status}`);
+            });
+        });
+
+        function toggleDevMode() {
+            alert('Developer mode allows you to load unpacked extensions for testing.');
+        }
+    </script>
+</body>
+
+</html>

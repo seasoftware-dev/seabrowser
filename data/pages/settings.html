@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Settings - Sea Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a14;
+            color: #e4e4e4;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 240px;
+            background: rgba(13, 17, 23, 0.95);
+            border-right: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 24px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: #3b82f6;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 16px 12px 8px;
+            margin-top: 8px;
+        }
+
+        .sidebar h2:first-child {
+            margin-top: 0;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #8b949e;
+            font-size: 14px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
+        .nav-item .icon {
+            font-size: 14px;
+            width: 18px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            margin-left: 240px;
+            padding: 32px 48px;
+            max-width: 800px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Settings Sections */
+        .settings-section {
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .settings-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin: 24px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Setting Row */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-info h3 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #e4e4e4;
+            margin-bottom: 2px;
+        }
+
+        .setting-info p {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .setting-control {
+            margin-left: 24px;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #888;
+            border-radius: 50%;
+            transition: all 0.25s ease;
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            border-color: #60a5fa;
+            box-shadow: 0 0 16px rgba(96, 165, 250, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(20px);
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Select Dropdown */
+        select {
+            appearance: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            padding: 8px 32px 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 160px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: all 0.15s ease;
+        }
+
+        select:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Text Input */
+        input[type="text"],
+        input[type="url"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            min-width: 250px;
+            transition: all 0.15s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #8b949e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e4e4e4;
+        }
+
+        .btn-secondary i {
+            margin-right: 4px;
+        }
+
+        /* Range Slider */
+        input[type="range"] {
+            width: 120px;
+            accent-color: #3b82f6;
+        }
+
+        .range-value {
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+            color: #8b949e;
+            font-size: 0.85rem;
+        }
+
+        /* Privacy Card */
+        .privacy-card {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+        }
+
+        .privacy-card h4 {
+            color: #3b82f6;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .privacy-card p {
+            color: #8b949e;
+            font-size: 0.8rem;
+        }
+
+        /* About Section */
+        .about-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+        }
+
+        .version-info {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <h2>General</h2>
+        <div class="nav-item active" data-section="general">
+            <i class="icon fa-solid fa-gear"></i> General
+        </div>
+        <div class="nav-item" data-section="appearance">
+            <i class="icon fa-solid fa-palette"></i> Appearance
+        </div>
+
+        <h2>Privacy & Security</h2>
+        <div class="nav-item" data-section="privacy">
+            <i class="icon fa-solid fa-shield-halved"></i> Privacy
+        </div>
+        <div class="nav-item" data-section="security">
+            <i class="icon fa-solid fa-lock"></i> Security
+        </div>
+        <div class="nav-item" data-section="data">
+            <i class="icon fa-solid fa-database"></i> Data & Storage
+        </div>
+
+        <h2>Features</h2>
+        <div class="nav-item" data-section="search">
+            <i class="icon fa-solid fa-magnifying-glass"></i> Search
+        </div>
+        <div class="nav-item" data-section="tabs">
+            <i class="icon fa-solid fa-window-restore"></i> Tabs
+        </div>
+
+        <h2>Info</h2>
+        <div class="nav-item" data-section="about">
+            <i class="icon fa-solid fa-circle-info"></i> About
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- General Settings -->
+        <section id="general" class="settings-section active">
+            <div class="page-header">
+                <h1>General</h1>
+                <p>Basic browser settings</p>
+            </div>
+
+            <div class="section-title">Startup</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Homepage</h3>
+                    <p>Page to show when you click the home button</p>
+                </div>
+                <div class="setting-control">
+                    <input type="url" id="homepage" value="sea://newtab" placeholder="URL or sea://newtab">
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Restore previous session</h3>
+                    <p>Reopen tabs from your last session on startup</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="restore-tabs" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="section-title">Downloads</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Ask where to save files</h3>
+                    <p>Prompt for download location each time</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="ask-download">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appearance Settings -->
+        <section id="appearance" class="settings-section">
+            <div class="page-header">
+                <h1>Appearance</h1>
+                <p>Customize how Sea Browser looks</p>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Theme</h3>
+                    <p>Choose your preferred color scheme</p>
+                </div>
+                <div class="setting-control">
+                    <select id="theme">
+                        <option value="dark">Ocean Dark</option>
+                        <option value="light">Coastal Light</option>
+                        <option value="system">System Default</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Page zoom</h3>
+                    <p>Default zoom level for web pages</p>
+                </div>
+                <div class="setting-control">
+                    <input type="range" id="zoom" min="50" max="200" value="100">
+                    <span class="range-value" id="zoom-value">100%</span>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Show sidebar</h3>
+                    <p>Display a sidebar for quick access</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="show-sidebar">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Privacy Settings -->
+        <section id="privacy" class="settings-section">
+            <div class="page-header">
+                <h1>Privacy</h1>
+                <p>Control how Sea Browser protects your privacy</p>
+            </div>
+
+            <div class="privacy-card">
+                <h4>🛡️ Enhanced Tracking Protection</h4>
+                <p>Sea Browser blocks trackers, fingerprinting scripts, and cryptominers by default.</p>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Tracking Protection Level</h3>
+                    <p>How aggressively to block trackers</p>
+                </div>
+                <div class="setting-control">
+                    <select id="tracking-protection">
+                        <option value="standard">Standard</option>
+                        <option value="strict" selected>Strict</option>
+                        <option value="off">Off</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Cookie Policy</h3>
+                    <p>Control how websites store cookies</p>
+                </div>
+                <div class="setting-control">
+                    <select id="cookie-policy">
+                        <option value="all">Accept All</option>
+                        <option value="third-party" selected>Block Third-Party</option>
+                        <option value="none">Block All</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Send "Do Not Track"</h3>
+                    <p>Request websites not to track you</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="send-dnt" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security Settings -->
+        <section id="security" class="settings-section">
+            <div class="page-header">
+                <h1>Security</h1>
+                <p>Keep yourself safe online</p>
+            </div>
+
+            <div class="privacy-card"
+                style="border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.05);">
+                <h4 style="color: #22c55e;">🔐 Hardware Security Keys Supported</h4>
+                <p>Sea Browser supports FIDO2/WebAuthn for passwordless authentication with YubiKey and other security
+                    keys.</p>
+            </div>
+
+            <div class="section-title">Authentication</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Enable WebAuthn / FIDO2</h3>
+                    <p>Allow websites to use hardware security keys for login</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="webauthn-enabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Prefer hardware authenticators</h3>
+                    <p>Always prefer physical security keys over software authenticators</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="prefer-hardware-auth" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Registered security keys</h3>
+                    <p>Manage your connected hardware security devices</p>
+                </div>
+                <div class="setting-control">
+                    <button class="btn btn-secondary" onclick="manageSecurityKeys()">Manage Keys</button>
+                </div>
+            </div>
+
+            <div class="section-title">Connection Security</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>HTTPS-Only Mode</h3>
+                    <p>Force secure connections when possible</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="https-only" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Block dangerous downloads</h3>
+                    <p>Warn before downloading potentially harmful files</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="block-dangerous" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Certificate transparency</h3>
+                    <p>Verify SSL certificates against public logs</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="cert-transparency" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="section-title">Data Protection</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Encrypt local settings</h3>
+                    <p>Protect your configuration and history with XOR encryption</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="encrypt-settings">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data & Storage Settings -->
+        <section id="data" class="settings-section">
+            <div class="page-header">
+                <h1>Data & Storage</h1>
+                <p>Manage your browsing data</p>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Clear data on exit</h3>
+                    <p>Automatically clear history and cookies when closing</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="clear-on-exit">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>History retention</h3>
+                    <p>Automatically delete history older than this many days</p>
+                </div>
+                <div class="setting-control" style="display: flex; align-items: center; gap: 12px;">
+                    <input type="range" id="history-retention" min="1" max="90" value="14">
+                    <span id="history-retention-value">14 days</span>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Clear browsing data</h3>
+                    <p>Delete history, cookies, cache, and more</p>
+                </div>
+                <div class="setting-control">
+                    <button class="btn btn-danger" onclick="clearBrowsingData()">Clear Data...</button>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Reset data settings</h3>
+                    <p>Restore default values for this section</p>
+                </div>
+                <div class="setting-control">
+                    <button class="btn btn-secondary" onclick="resetSection('data')"><i
+                            class="fa-solid fa-rotate-left"></i> Reset</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Settings -->
+        <section id="search" class="settings-section">
+            <div class="page-header">
+                <h1>Search</h1>
+                <p>Configure your search experience</p>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Default search engine</h3>
+                    <p>Used when searching from the address bar</p>
+                </div>
+                <div class="setting-control">
+                    <select id="search-engine">
+                        <option value="duckduckgo">DuckDuckGo</option>
+                        <option value="brave">Brave Search</option>
+                        <option value="google">Google</option>
+                        <option value="bing">Bing</option>
+                        <option value="startpage">Startpage</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Show search suggestions</h3>
+                    <p>Display suggestions as you type</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="search-suggestions" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabs Settings -->
+        <section id="tabs" class="settings-section">
+            <div class="page-header">
+                <h1>Tabs</h1>
+                <p>Customize tab behavior</p>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Vertical tabs</h3>
+                    <p>Display tabs in a sidebar instead of top bar</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="vertical-tabs">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Tab preview on hover</h3>
+                    <p>Show page preview when hovering over tabs</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="tab-preview">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Close tabs with middle-click</h3>
+                    <p>Middle-click on a tab to close it</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="middle-click-close" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="settings-section">
+            <div class="page-header">
+                <h1>About Sea Browser</h1>
+                <p>Privacy-first browsing for everyone</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 32px;">
+                <svg class="about-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+                    style="width: 100px; height: 100px;">
+                    <defs>
+                        <linearGradient id="aboutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3b82f6" />
+                            <stop offset="100%" style="stop-color:#1d4ed8" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#aboutGrad)" />
+                    <path d="M30 35 Q50 25, 70 35 Q50 45, 30 55 Q50 65, 70 55" fill="none" stroke="#60a5fa"
+                        stroke-width="6" stroke-linecap="round" />
+                </svg>
+                <h2 style="color: #fff; margin-top: 16px; font-size: 1.5rem;">Sea Browser</h2>
+                <p style="color: #60a5fa; font-size: 0.9rem;">Version 1.0.0</p>
+            </div>
+
+            <div class="privacy-card" style="margin-bottom: 24px;">
+                <h4>About Sea Browser</h4>
+                <p>Sea Browser is a privacy-focused web browser built on WebKitGTK. We believe in your right to browse
+                    the internet without being tracked, profiled, or exploited. Our mission is to provide a fast,
+                    secure, and beautiful browsing experience.</p>
+            </div>
+
+            <div class="section-title">Developers</div>
+            <div class="setting-row" style="cursor: pointer;" onclick="window.location.href='https://wyind.dev'">
+                <div class="setting-info">
+                    <h3><i class="fa-solid fa-code"></i> wyind</h3>
+                    <p>Lead Developer of Sea Browser</p>
+                </div>
+                <div class="setting-control">
+                    <a href="https://wyind.dev" style="color: #60a5fa; text-decoration: none;"><i
+                            class="fa-solid fa-arrow-up-right-from-square"></i> wyind.dev</a>
+                </div>
+            </div>
+            <div class="setting-row" style="cursor: pointer;" onclick="window.location.href='https://ryanpc.org'">
+                <div class="setting-info">
+                    <h3><i class="fa-solid fa-building"></i> Ryan</h3>
+                    <p>Owner of Sea Software</p>
+                </div>
+                <div class="setting-control">
+                    <a href="https://ryanpc.org" style="color: #60a5fa; text-decoration: none;"><i
+                            class="fa-solid fa-arrow-up-right-from-square"></i> ryanpc.org</a>
+                </div>
+            </div>
+
+            <div class="section-title">License</div>
+            <div class="privacy-card"
+                style="border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.05);">
+                <h4 style="color: #22c55e;"><i class="fa-solid fa-scale-balanced"></i> GNU General Public License v3.0
+                </h4>
+                <p>Sea Browser is free software: you can redistribute it and/or modify it under the terms of the GNU
+                    General Public License as published by the Free Software Foundation, either version 3 of the
+                    License, or any later version.</p>
+                <p style="margin-top: 8px;"><a href="https://www.gnu.org/licenses/gpl-3.0.html"
+                        style="color: #60a5fa;">View Full License</a></p>
+            </div>
+
+            <div class="section-title">Updates</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Auto-update</h3>
+                    <p>Automatically check for and install updates</p>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle">
+                        <input type="checkbox" id="auto-update" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Check for updates</h3>
+                    <p>Current version: 1.0.0</p>
+                </div>
+                <div class="setting-control">
+                    <button class="btn btn-primary" onclick="checkForUpdates()"><i class="fa-solid fa-rotate"></i> Check
+                        Now</button>
+                </div>
+            </div>
+
+            <div class="section-title">System</div>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Set as default browser</h3>
+                    <p>Make Sea Browser your default web browser</p>
+                </div>
+                <div class="setting-control">
+                    <button class="btn btn-primary" onclick="setAsDefaultBrowser()"><i class="fa-solid fa-globe"></i>
+                        Set Default</button>
+                </div>
+            </div>
+
+            <div
+                style="text-align: center; margin-top: 32px; padding: 24px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <p style="color: #6b7280; font-size: 0.85rem;">
+                    <strong>Engine:</strong> WebKitGTK<br>
+                    <strong>Source:</strong> <a href="https://github.com/seasoftware-dev/seabrowser"
+                        style="color: #60a5fa;">github.com/seasoftware-dev/seabrowser</a><br><br>
+                    Made with 💙 for privacy. 🌊
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+
+                item.classList.add('active');
+                const section = item.dataset.section;
+                document.getElementById(section).classList.add('active');
+            });
+        });
+
+        // Zoom slider value display
+        const zoomSlider = document.getElementById('zoom');
+        const zoomValue = document.getElementById('zoom-value');
+        zoomSlider.addEventListener('input', () => {
+            zoomValue.textContent = zoomSlider.value + '%';
+        });
+
+        // History retention slider
+        const historySlider = document.getElementById('history-retention');
+        const historyValue = document.getElementById('history-retention-value');
+        if (historySlider) {
+            historySlider.addEventListener('input', () => {
+                historyValue.textContent = historySlider.value + ' days';
+            });
+        }
+
+        // Settings persistence (connects to C++ backend via message handlers)
+        function saveSetting(key, value) {
+            // Convert value to string for C++ backend
+            const strValue = typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value);
+            console.log('Saving:', key, '=', strValue);
+
+            // Use WebKit message handlers to send to C++ backend
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.settings) {
+                window.webkit.messageHandlers.settings.postMessage({ key: key, value: strValue });
+            }
+        }
+
+        // Load saved settings on page init
+        (function loadSettings() {
+            try {
+                // The C++ backend injects the JSON settings string here
+                const settings = {{ SETTINGS_DATA }
+            };
+            console.log('Loaded settings:', settings);
+
+            // Apply loaded settings to form elements
+            if (settings.theme) {
+                const themeEl = document.getElementById('theme');
+                if (themeEl) themeEl.value = settings.theme;
+            }
+            if (settings.zoom) {
+                const zoomEl = document.getElementById('zoom');
+                if (zoomEl) {
+                    zoomEl.value = settings.zoom;
+                    const zoomValEl = document.getElementById('zoom-value');
+                    if (zoomValEl) zoomValEl.textContent = settings.zoom + '%';
+                }
+            }
+            if (settings.homepage) {
+                const homeEl = document.getElementById('homepage');
+                if (homeEl) homeEl.value = settings.homepage;
+            }
+            if (settings.default_engine) {
+                const searchEl = document.getElementById('search-engine');
+                if (searchEl) searchEl.value = settings.default_engine;
+            }
+
+            // Boolean settings mapping (ID in HTML to Key in settings object)
+            const boolSettings = {
+                'https-only': settings.https_only,
+                'send-dnt': settings.send_dnt,
+                'clear-on-exit': settings.clear_on_exit,
+                'restore-tabs': settings.restore_tabs,
+                'encrypt-settings': settings.encrypt_settings
+            };
+            for (const [id, val] of Object.entries(boolSettings)) {
+                const el = document.getElementById(id);
+                if (el && typeof val === 'boolean') {
+                    el.checked = val;
+                }
+            }
+        } catch (e) {
+            console.log('No saved settings or error loading:', e);
+        }
+        }) ();
+
+        function clearBrowsingData() {
+            if (confirm('This will clear your browsing history, cookies, and cached data. Continue?')) {
+                console.log('Clearing browsing data...');
+                saveSetting('clear_browsing_data', true);
+                alert('Browsing data cleared!');
+            }
+        }
+
+        function manageSecurityKeys() {
+            alert('Security Keys Manager\n\nConnected devices will be detected automatically.\nPlug in your YubiKey or other FIDO2 device to register it.\n\nSupported: YubiKey, Titan Key, SoloKey, and other FIDO2 devices.');
+        }
+
+        // Reset section to defaults
+        function resetSection(section) {
+            const defaults = {
+                general: { homepage: 'sea://newtab', 'restore-tabs': true },
+                appearance: { theme: 'system', zoom: 100 },
+                privacy: { 'tracking-protection': 'strict', 'cookie-policy': 'block-third-party', 'send-dnt': true },
+                security: { 'https-only': true, 'webauthn-enabled': true, 'block-dangerous': true },
+                data: { 'clear-on-exit': false, 'history-retention': 14 },
+                search: { 'search-engine': 'duckduckgo', 'show-suggestions': true },
+                tabs: { 'new-tab-position': 'end', 'vertical-tabs': false }
+            };
+
+            if (defaults[section] && confirm(`Reset ${section} settings to defaults?`)) {
+                const sectionDefaults = defaults[section];
+                for (const [key, value] of Object.entries(sectionDefaults)) {
+                    const el = document.getElementById(key);
+                    if (el) {
+                        if (el.type === 'checkbox') el.checked = value;
+                        else if (el.type === 'range') {
+                            el.value = value;
+                            const display = document.getElementById(key + '-value');
+                            if (display) display.textContent = value + (key.includes('zoom') ? '%' : ' days');
+                        }
+                        else el.value = value;
+                        saveSetting(key, value);
+                    }
+                }
+                alert(`${section.charAt(0).toUpperCase() + section.slice(1)} settings reset to defaults.`);
+            }
+        }
+
+        // Check for updates from GitHub releases
+        async function checkForUpdates() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('https://api.github.com/repos/seasoftware-dev/seabrowser/releases/latest');
+                const data = await response.json();
+                const latestVersion = data.tag_name.replace('v', '');
+                const currentVersion = '1.0.0';
+
+                if (latestVersion > currentVersion) {
+                    if (confirm(`New version ${latestVersion} available!\n\nCurrent: ${currentVersion}\nLatest: ${latestVersion}\n\nWould you like to download the update?`)) {
+                        // Find the right asset for the OS
+                        const assets = data.assets || [];
+                        const linuxAsset = assets.find(a => a.name.includes('linux') || a.name.includes('Linux'));
+                        if (linuxAsset) {
+                            window.location.href = linuxAsset.browser_download_url;
+                        } else {
+                            window.location.href = data.html_url; // Fallback to releases page
+                        }
+                    }
+                } else {
+                    alert('You are running the latest version! ✓');
+                }
+            } catch (error) {
+                console.error('Update check failed:', error);
+                alert('Could not check for updates. Please check your internet connection.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Set as default browser (sends message to backend)
+        function setAsDefaultBrowser() {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.settings) {
+                window.webkit.messageHandlers.settings.postMessage({ action: 'set_default_browser' });
+                alert('Sea Browser has been set as your default browser!');
+            } else {
+                // Fallback: show instructions
+                alert('To set Sea Browser as default:\n\n1. Open System Settings\n2. Go to Default Applications\n3. Select Sea Browser as your web browser\n\nOn Linux, you can also run:\nxdg-settings set default-web-browser io.seabrowser.SeaBrowser.desktop');
+            }
+        }
+
+        // Auto-save on change
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('change', () => {
+                const value = el.type === 'checkbox' ? el.checked : el.value;
+                saveSetting(el.id, value);
+            });
+        });
+    </script>
+</body>
+
+</html>
