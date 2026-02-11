@@ -12,7 +12,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <iostream>
-#include <filesystem>
 
 namespace Tsunami {
 
@@ -68,9 +67,9 @@ int Application::run(int argc, char* argv[]) {
     auto& settings = Settings::instance();
     if (settings.isFirstRun()) {
         // Show onboarding/setup page
-        BrowserWindow onboardingWindow;
-        onboardingWindow.show();
-        onboardingWindow.loadUrl(QUrl::fromLocalFile(find_resource("pages/newtab.html")));
+        BrowserWindow browserWindow;
+        browserWindow.show();
+        browserWindow.loadUrl(QUrl::fromLocalFile(find_resource("pages/newtab.html")));
         app.processEvents();
         return app.exec();
     }
@@ -79,8 +78,7 @@ int Application::run(int argc, char* argv[]) {
     BrowserWindow window;
     window.show();
     
-    int result = app.exec();
-    return result;
+    return app.exec();
 }
 
 QString Application::get_config_dir() {
