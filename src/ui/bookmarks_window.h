@@ -9,13 +9,13 @@
 #include <QLineEdit>
 #include <QHeaderView>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 class BookmarksWindow : public QDialog {
     Q_OBJECT
 public:
     explicit BookmarksWindow(QWidget* parent = nullptr);
-    void applyDarkBlueTheme();
+    void applyTheme();
 
 private slots:
     void onAddBookmark();
@@ -23,10 +23,11 @@ private slots:
     void onItemDoubleClicked(QTableWidgetItem* item);
 
 private:
+    QLabel* title_;
+    QLineEdit* search_edit_;
     QTableWidget* table_;
     QPushButton* add_btn_;
     QPushButton* delete_btn_;
-    QLineEdit* search_edit_;
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami

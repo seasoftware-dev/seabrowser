@@ -8,13 +8,13 @@
 #include <QLabel>
 #include <QCheckBox>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 class ExtensionsWindow : public QDialog {
     Q_OBJECT
 public:
     explicit ExtensionsWindow(QWidget* parent = nullptr);
-    void applyDarkBlueTheme();
+    void applyTheme();
 
 private slots:
     void onImportChromeExtensions();
@@ -22,10 +22,11 @@ private slots:
     void onDeveloperModeToggled(bool checked);
 
 private:
-    QListWidget* list_;
-    QPushButton* import_btn_;
+    QLabel* title_;
     QCheckBox* dev_mode_check_;
-    QList<QMap<QString, QString>> extensions_;
+    QPushButton* import_btn_;
+    QListWidget* list_;
+    QLabel* info_;
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami

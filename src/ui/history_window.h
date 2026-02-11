@@ -9,22 +9,23 @@
 #include <QLineEdit>
 #include <QHeaderView>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 class HistoryWindow : public QDialog {
     Q_OBJECT
 public:
     explicit HistoryWindow(QWidget* parent = nullptr);
-    void applyDarkBlueTheme();
+    void applyTheme();
 
 private slots:
     void onClearHistory();
     void onItemDoubleClicked(QTableWidgetItem* item);
 
 private:
+    QLabel* title_;
+    QLineEdit* search_edit_;
     QTableWidget* table_;
     QPushButton* clear_btn_;
-    QLineEdit* search_edit_;
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami

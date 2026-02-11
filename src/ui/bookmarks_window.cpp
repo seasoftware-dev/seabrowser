@@ -1,4 +1,5 @@
 #include "bookmarks_window.h"
+#include "../settings/settings.h"
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -9,7 +10,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 BookmarksWindow::BookmarksWindow(QWidget* parent)
     : QDialog(parent)
@@ -24,50 +25,20 @@ BookmarksWindow::BookmarksWindow(QWidget* parent)
     main_layout->setSpacing(12);
 
     QHBoxLayout* header_layout = new QHBoxLayout();
-    QLabel* title = new QLabel("Bookmarks");
-    title->setStyleSheet("font-size: 20px; font-weight: 600; color: #3b82f6;");
-    header_layout->addWidget(title);
+    title_ = new QLabel("Bookmarks");
+    header_layout->addWidget(title_);
     header_layout->addStretch();
 
     search_edit_ = new QLineEdit();
     search_edit_->setPlaceholderText("Search bookmarks...");
     search_edit_->setFixedWidth(200);
-    search_edit_->setStyleSheet(R"(
-        QLineEdit {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 8px 12px;
-        }
-    )");
     header_layout->addWidget(search_edit_);
 
     add_btn_ = new QPushButton("Add Bookmark");
-    add_btn_->setStyleSheet(R"(
-        QPushButton {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 600;
-        }
-    )");
     connect(add_btn_, &QPushButton::clicked, this, &BookmarksWindow::onAddBookmark);
     header_layout->addWidget(add_btn_);
 
     delete_btn_ = new QPushButton("Delete");
-    delete_btn_->setStyleSheet(R"(
-        QPushButton {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 600;
-        }
-    )");
     connect(delete_btn_, &QPushButton::clicked, this, &BookmarksWindow::onDeleteBookmark);
     header_layout->addWidget(delete_btn_);
 
@@ -80,42 +51,90 @@ BookmarksWindow::BookmarksWindow(QWidget* parent)
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setAlternatingRowColors(true);
 
-    table_->setStyleSheet(R"(
-        QTableWidget {
-            background-color: #0f172a;
-            border: 1px solid #1e293b;
+    connect(table_, &QTableWidget::itemDoubleClicked, this, &BookmarksWindow::onItemDoubleClicked);
+    main_layout->addWidget(table_);
+
+    applyTheme();
+    connect(&Settings::instance(), &Settings::settingsChanged, this, &BookmarksWindow::applyTheme);
+}
+
+void BookmarksWindow::applyTheme() {
+    QString accentColor = Settings::instance().getAccentColor();
+    if (accentColor.isEmpty()) accentColor = "#60a5fa";
+
+    bool isDark = Settings::instance().getDarkMode();
+
+    QString bgColor = isDark ? "#030712" : "#f0f9ff";
+    QString titleColor = isDark ? "#e2e8f0" : "#1e40af";
+    QString textColor = isDark ? "#e2e8f0" : "#1e293b";
+    QString inputBg = isDark ? "#1e293b" : "#ffffff";
+    QString borderColor = isDark ? "#1e293b" : "#bfdbfe";
+    QString headerBg = isDark ? "#0f172a" : "#dbeafe";
+    QString headerText = isDark ? "#64748b" : "#3b82f6";
+
+    title_->setStyleSheet(QString("font-size: 20px; font-weight: 600; color: %1;").arg(accentColor));
+
+    search_edit_->setStyleSheet(QString(R"(
+        QLineEdit {
+            background-color: %1;
+            color: %2;
+            border: 1px solid %3;
             border-radius: 8px;
-            color: #e2e8f0;
+            padding: 8px 12px;
+        }
+    )").arg(inputBg, textColor, borderColor));
+
+    add_btn_->setStyleSheet(QString(R"(
+        QPushButton {
+            background-color: %1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+        }
+    )").arg(accentColor));
+
+    delete_btn_->setStyleSheet(QString(R"(
+        QPushButton {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+        }
+    )"));
+
+    table_->setStyleSheet(QString(R"(
+        QTableWidget {
+            background-color: %1;
+            border: 1px solid %2;
+            border-radius: 8px;
+            color: %3;
             font-size: 13px;
         }
         QTableWidget::item {
             padding: 10px 12px;
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid %2;
         }
         QHeaderView::section {
-            background-color: #0f172a;
-            color: #64748b;
+            background-color: %4;
+            color: %5;
             padding: 10px 12px;
             font-weight: 600;
             font-size: 12px;
             text-transform: uppercase;
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid %2;
         }
-    )");
+    )").arg(inputBg, borderColor, textColor, headerBg, headerText));
 
-    connect(table_, &QTableWidget::itemDoubleClicked, this, &BookmarksWindow::onItemDoubleClicked);
-    main_layout->addWidget(table_);
-
-    applyDarkBlueTheme();
-}
-
-void BookmarksWindow::applyDarkBlueTheme() {
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QDialog {
-            background-color: #030712;
-            color: #e2e8f0;
+            background-color: %1;
+            color: %2;
         }
-    )");
+    )").arg(bgColor, textColor));
 }
 
 void BookmarksWindow::onAddBookmark() {
@@ -145,4 +164,4 @@ void BookmarksWindow::onItemDoubleClicked(QTableWidgetItem* item) {
     }
 }
 
-} // namespace SeaBrowser
+} // namespace Tsunami

@@ -9,13 +9,13 @@
 #include <QLabel>
 #include <QHeaderView>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 class DownloadsWindow : public QDialog {
     Q_OBJECT
 public:
     explicit DownloadsWindow(QWidget* parent = nullptr);
-    void applyDarkBlueTheme();
+    void applyTheme();
 
 private slots:
     void onOpenFolder();
@@ -23,9 +23,10 @@ private slots:
     void onItemActivated(QTableWidgetItem* item);
 
 private:
+    QLabel* title_;
     QTableWidget* table_;
     QPushButton* open_folder_btn_;
     QPushButton* clear_btn_;
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami

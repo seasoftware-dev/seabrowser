@@ -3,6 +3,8 @@
 #include <QDialog>
 #include <QButtonGroup>
 #include <QStackedWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QLabel>
 #include <QRadioButton>
@@ -26,11 +28,8 @@ private slots:
 private:
     void setupUi();
     void applyTheme();
+    void updateOptionButtons();
     void closeEvent(QCloseEvent* event) override;
-
-    QWidget* createThemeStep();
-    QWidget* createColorStep();
-    QWidget* createSearchStep();
 
     QStackedWidget* stacked_widget_ = nullptr;
     QButtonGroup* theme_group_ = nullptr;
@@ -38,6 +37,11 @@ private:
     QButtonGroup* search_group_ = nullptr;
     QPushButton* back_btn_ = nullptr;
     QPushButton* next_btn_ = nullptr;
+    QLabel* title_ = nullptr;
+    QLabel* subtitle_ = nullptr;
+    QVBoxLayout* theme_layout_ = nullptr;
+    QVBoxLayout* color_layout_ = nullptr;
+    QVBoxLayout* search_layout_ = nullptr;
     int current_step_ = 0;
 };
 

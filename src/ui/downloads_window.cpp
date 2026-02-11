@@ -1,4 +1,5 @@
 #include "downloads_window.h"
+#include "../settings/settings.h"
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -11,7 +12,7 @@
 #include <QDir>
 #include <QHeaderView>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 DownloadsWindow::DownloadsWindow(QWidget* parent)
     : QDialog(parent)
@@ -25,43 +26,14 @@ DownloadsWindow::DownloadsWindow(QWidget* parent)
     main_layout->setSpacing(12);
 
     QHBoxLayout* header_layout = new QHBoxLayout();
-    QLabel* title = new QLabel("Downloads");
-    title->setStyleSheet("font-size: 20px; font-weight: 600; color: #e2e8f0;");
-    header_layout->addWidget(title);
+    title_ = new QLabel("Downloads");
+    header_layout->addWidget(title_);
     header_layout->addStretch();
 
     open_folder_btn_ = new QPushButton("Open Folder");
-    open_folder_btn_->setStyleSheet(R"(
-        QPushButton {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 600;
-            font-size: 13px;
-        }
-        QPushButton:hover {
-            opacity: 0.9;
-        }
-    )");
     connect(open_folder_btn_, &QPushButton::clicked, this, &DownloadsWindow::onOpenFolder);
 
     clear_btn_ = new QPushButton("Clear Completed");
-    clear_btn_->setStyleSheet(R"(
-        QPushButton {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 600;
-            font-size: 13px;
-        }
-        QPushButton:hover {
-            background-color: rgba(239, 68, 68, 0.25);
-        }
-    )");
     connect(clear_btn_, &QPushButton::clicked, this, &DownloadsWindow::onClearCompleted);
 
     header_layout->addWidget(open_folder_btn_);
@@ -76,60 +48,109 @@ DownloadsWindow::DownloadsWindow(QWidget* parent)
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setAlternatingRowColors(true);
     connect(table_, &QTableWidget::itemActivated, this, &DownloadsWindow::onItemActivated);
-    table_->setStyleSheet(R"(
-        QTableWidget {
-            background-color: #0f172a;
-            border: 1px solid #1e293b;
+
+    main_layout->addWidget(table_);
+
+    applyTheme();
+    connect(&Settings::instance(), &Settings::settingsChanged, this, &DownloadsWindow::applyTheme);
+}
+
+void DownloadsWindow::applyTheme() {
+    QString accentColor = Settings::instance().getAccentColor();
+    if (accentColor.isEmpty()) accentColor = "#60a5fa";
+
+    bool isDark = Settings::instance().getDarkMode();
+
+    QString bgColor = isDark ? "#030712" : "#f0f9ff";
+    QString titleColor = isDark ? "#e2e8f0" : "#1e40af";
+    QString textColor = isDark ? "#e2e8f0" : "#1e293b";
+    QString inputBg = isDark ? "#1e293b" : "#ffffff";
+    QString borderColor = isDark ? "#1e293b" : "#bfdbfe";
+    QString headerBg = isDark ? "#0f172a" : "#dbeafe";
+    QString headerText = isDark ? "#64748b" : "#3b82f6";
+    QString selectedBg = isDark ? "rgba(96, 165, 250, 0.2)" : "#bfdbfe";
+
+    title_->setStyleSheet(QString("font-size: 20px; font-weight: 600; color: %1;").arg(titleColor));
+
+    open_folder_btn_->setStyleSheet(QString(R"(
+        QPushButton {
+            background-color: %1;
+            color: white;
+            border: none;
             border-radius: 8px;
-            gridline-color: #1e293b;
-            color: #e2e8f0;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            opacity: 0.9;
+        }
+    )").arg(accentColor));
+
+    clear_btn_->setStyleSheet(QString(R"(
+        QPushButton {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            background-color: rgba(239, 68, 68, 0.25);
+        }
+    )"));
+
+    table_->setStyleSheet(QString(R"(
+        QTableWidget {
+            background-color: %1;
+            border: 1px solid %2;
+            border-radius: 8px;
+            gridline-color: %2;
+            color: %3;
             font-size: 13px;
         }
         QTableWidget::item {
             padding: 10px 12px;
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid %2;
         }
         QTableWidget::item:selected {
-            background-color: rgba(59, 130, 246, 0.2);
+            background-color: %4;
         }
         QHeaderView::section {
-            background-color: #0f172a;
-            color: #64748b;
+            background-color: %5;
+            color: %6;
             padding: 10px 12px;
             font-weight: 600;
             font-size: 12px;
             text-transform: uppercase;
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid %2;
         }
         QScrollBar:vertical {
-            background: #0f172a;
+            background: %1;
             width: 10px;
         }
         QScrollBar::handle:vertical {
-            background: #334155;
+            background: %7;
             border-radius: 5px;
             min-height: 20px;
         }
         QScrollBar::handle:vertical:hover {
-            background: #475569;
+            background: %8;
         }
-    )");
+    )").arg(inputBg, borderColor, textColor, selectedBg, headerBg, headerText,
+           isDark ? "#334155" : "#93c5fd", isDark ? "#475569" : "#60a5fa"));
 
-    main_layout->addWidget(table_);
-
-    applyDarkBlueTheme();
-}
-
-void DownloadsWindow::applyDarkBlueTheme() {
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QDialog {
-            background-color: #030712;
-            color: #e2e8f0;
+            background-color: %1;
+            color: %2;
         }
         QLabel {
-            color: #e2e8f0;
+            color: %2;
         }
-    )");
+    )").arg(bgColor, textColor));
 }
 
 void DownloadsWindow::onOpenFolder() {
@@ -144,4 +165,4 @@ void DownloadsWindow::onItemActivated(QTableWidgetItem* item) {
     Q_UNUSED(item)
 }
 
-} // namespace SeaBrowser
+} // namespace Tsunami

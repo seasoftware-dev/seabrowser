@@ -646,25 +646,25 @@ void BrowserWindow::onClearHistory() {
 }
 
 void BrowserWindow::onHistory() {
-    SeaBrowser::HistoryWindow* historyWindow = new SeaBrowser::HistoryWindow(this);
+    Tsunami::HistoryWindow* historyWindow = new Tsunami::HistoryWindow(this);
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->show();
 }
 
 void BrowserWindow::onBookmarks() {
-    SeaBrowser::BookmarksWindow* bookmarksWindow = new SeaBrowser::BookmarksWindow(this);
+    Tsunami::BookmarksWindow* bookmarksWindow = new Tsunami::BookmarksWindow(this);
     bookmarksWindow->setAttribute(Qt::WA_DeleteOnClose);
     bookmarksWindow->show();
 }
 
 void BrowserWindow::onDownloads() {
-    SeaBrowser::DownloadsWindow* downloadsWindow = new SeaBrowser::DownloadsWindow(this);
+    Tsunami::DownloadsWindow* downloadsWindow = new Tsunami::DownloadsWindow(this);
     downloadsWindow->setAttribute(Qt::WA_DeleteOnClose);
     downloadsWindow->show();
 }
 
 void BrowserWindow::onExtensions() {
-    SeaBrowser::ExtensionsWindow* extensionsWindow = new SeaBrowser::ExtensionsWindow(this);
+    Tsunami::ExtensionsWindow* extensionsWindow = new Tsunami::ExtensionsWindow(this);
     extensionsWindow->setAttribute(Qt::WA_DeleteOnClose);
     extensionsWindow->show();
 }
