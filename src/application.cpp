@@ -12,7 +12,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <iostream>
-#include <filesystem>
 
 namespace Tsunami {
 
