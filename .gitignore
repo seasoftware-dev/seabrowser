@@ -1,0 +1,51 @@
+# Build artifacts
+build/
+output/
+
+# Compiled objects
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.dll.a
+*.a.lib
+*.pc
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+*.in
+
+# Qt
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Qt WebEngine
+QtWebEngineProcess*
+
+# Backup files
+*.bak
+*.tmp
+*.log
+
+# Cach files
+.cache/
+.cmake/

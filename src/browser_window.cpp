@@ -1,909 +1,863 @@
 /*
- * Sea Browser - Privacy-focused web browser
- * browser_window.cpp - Main browser window implementation (GTK3)
+ * Tsunami Browser - Privacy-focused web browser
+ * browser_window.cpp - Main browser window implementation (Qt6)
  */
 
 #include "browser_window.h"
 #include "web_view.h"
 #include "tab_manager.h"
 #include "history/history_manager.h"
-#include "settings/settings_manager.h"
+#include "settings/settings.h"
+#include "application.h"
 #include "settings/settings_dialog.h"
-#include "extension_manager.h"
-#include "privacy/content_blocker.h"
-#include "downloads/downloads_manager.h"
-#include <filesystem>
-#include <regex>
+#include "ui/onboarding_dialog.h"
+#include "ui/downloads_window.h"
+#include "ui/bookmarks_window.h"
+#include "ui/history_window.h"
+#include "ui/extensions_window.h"
+#include "ui/custom_menu.h"
+#include <QWebEngineView>
+#include <QWebEnginePage>
+#include <QWebEngineHistory>
+#include <QWebEngineProfile>
+#include <QApplication>
+#include <QScreen>
+#include <QStyle>
+#include <QMenuBar>
+#include <QMenu>
+#include <QFile>
+#include <QFileInfo>
+#include <QDir>
+#include <QFileDialog>
+#include <QSettings>
+#include <QCloseEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QMessageBox>
+#include <QDragEnterEvent>
+#include <QMimeData>
 #include <iostream>
 #include <algorithm>
-#include <gdk/gdk.h>
-#ifdef GDK_WINDOWING_X11
-#include <gdk/gdkx.h>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#endif
 
-namespace SeaBrowser {
+using namespace Tsunami;
 
-static TabManager* global_tab_manager = nullptr;
+namespace Tsunami {
 
-// Recently closed tabs stack
-static std::vector<std::pair<std::string, std::string>> closed_tabs_stack;
-static const size_t MAX_CLOSED_TABS = 10;
-
-static const char* FIREFOX_USER_AGENT = 
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0";
-static const char* CHROME_USER_AGENT = 
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36";
-static const char* SAFARI_USER_AGENT = 
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15";
-
-// X11 HACK: Forcefully remove decorations using MOTIF hints
-#ifdef GDK_WINDOWING_X11
-static void set_motif_hints_no_decorations(GtkWidget* window) {
-    if (!window || !gtk_widget_get_realized(window)) return;
-    GdkWindow* gdk_window = gtk_widget_get_window(window);
-    if (!gdk_window || !GDK_IS_X11_WINDOW(gdk_window)) return;
+BrowserWindow::BrowserWindow(QWidget* parent)
+    : QMainWindow(parent)
+    , tab_widget_(nullptr)
+    , url_bar_(nullptr)
+    , title_bar_(nullptr)
+    , progress_bar_(nullptr)
+    , menu_btn_(nullptr)
+    , back_btn_(nullptr)
+    , forward_btn_(nullptr)
+    , reload_btn_(nullptr)
+    , home_btn_(nullptr)
+    , bookmark_btn_(nullptr)
+    , security_btn_(nullptr)
+    , min_btn_(nullptr)
+    , max_btn_(nullptr)
+    , close_btn_(nullptr)
+    , is_dragging_(false)
+{
+    setWindowTitle("Tsunami");
+    resize(1400, 900);
+    setAcceptDrops(true);
     
-    Display* display = GDK_DISPLAY_XDISPLAY(gdk_window_get_display(gdk_window));
-    Window xwindow = GDK_WINDOW_XID(gdk_window);
+    // Enable client-side decorations (CSD) - custom title bar
+    setWindowFlags(Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
     
-    struct {
-        unsigned long flags;
-        unsigned long functions;
-        unsigned long decorations;
-        long input_mode;
-        unsigned long status;
-    } hints = {2, 0, 0, 0, 0};
-    
-    Atom motif_hints = XInternAtom(display, "_MOTIF_WM_HINTS", False);
-    XChangeProperty(display, xwindow, motif_hints, motif_hints, 32,
-                    PropModeReplace, (unsigned char*)&hints, 5);
-    XFlush(display);
-    std::cout << "[SeaBrowser] Applied MOTIF hints to hide decorations" << std::endl;
+    setupUi();
+    applyTheme();
+    restoreSession();
 }
 
-// Set additional KDE-specific properties
-static void set_kde_properties(GtkWidget* window) {
-    if (!window || !gtk_widget_get_realized(window)) return;
-    GdkWindow* gdk_window = gtk_widget_get_window(window);
-    if (!gdk_window || !GDK_IS_X11_WINDOW(gdk_window)) return;
-    
-    Display* display = GDK_DISPLAY_XDISPLAY(gdk_window_get_display(gdk_window));
-    Window xwindow = GDK_WINDOW_XID(gdk_window);
-    
-    // Set _KDE_NET_WM_FORCE_CSD to force CSD on KDE
-    Atom kde_csd = XInternAtom(display, "_KDE_NET_WM_FORCE_CSD", False);
-    unsigned long force_csd = 1;
-    XChangeProperty(display, xwindow, kde_csd, XA_CARDINAL, 32,
-                    PropModeReplace, (unsigned char*)&force_csd, 1);
-    
-    // Set _NET_WM_WINDOW_TYPE to NORMAL (not DIALOG)
-    Atom wm_window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
-    Atom wm_window_type_normal = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
-    XChangeProperty(display, xwindow, wm_window_type, XA_ATOM, 32,
-                    PropModeReplace, (unsigned char*)&wm_window_type_normal, 1);
-    
-    XFlush(display);
-    std::cout << "[SeaBrowser] Applied KDE-specific window properties" << std::endl;
+BrowserWindow::~BrowserWindow() {
+    saveSession();
 }
-#endif
 
-// Show find bar for current tab
-static void show_find_bar(GtkWindow* window, WebKitWebView* web_view) {
-    static GtkWidget* find_bar = nullptr;
-    static GtkWidget* find_entry = nullptr;
-    static WebKitWebView* current_web_view = nullptr;
+void BrowserWindow::show() {
+    QMainWindow::show();
+}
+
+void BrowserWindow::setupUi() {
+    // Set window icon for all platforms (Wayland, X11, Windows)
+    QStringList iconPaths;
+    iconPaths << QCoreApplication::applicationDirPath() + "/data/logo.svg"
+              << QCoreApplication::applicationDirPath() + "/logo.svg"
+              << "data/logo.svg";
     
-    if (!find_bar) {
-        find_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-        gtk_style_context_add_class(gtk_widget_get_style_context(find_bar), "find-bar");
-        gtk_widget_set_margin_start(find_bar, 10);
-        gtk_widget_set_margin_end(find_bar, 10);
-        gtk_widget_set_margin_top(find_bar, 6);
-        gtk_widget_set_margin_bottom(find_bar, 6);
-        
-        find_entry = gtk_entry_new();
-        gtk_entry_set_placeholder_text(GTK_ENTRY(find_entry), "Find in page...");
-        gtk_widget_set_hexpand(find_entry, TRUE);
-        
-        auto prev_btn = gtk_button_new_from_icon_name("go-up-symbolic", GTK_ICON_SIZE_BUTTON);
-        auto next_btn = gtk_button_new_from_icon_name("go-down-symbolic", GTK_ICON_SIZE_BUTTON);
-        auto close_btn = gtk_button_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_BUTTON);
-        
-        gtk_box_pack_start(GTK_BOX(find_bar), gtk_label_new("Find:"), FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(find_bar), find_entry, TRUE, TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(find_bar), prev_btn, FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(find_bar), next_btn, FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(find_bar), close_btn, FALSE, FALSE, 0);
-        
-        // Find next
-        g_signal_connect(next_btn, "clicked", G_CALLBACK(+[](GtkButton*, gpointer) {
-            if (current_web_view && find_entry) {
-                webkit_find_controller_search_next(
-                    webkit_web_view_get_find_controller(current_web_view));
-            }
-        }), nullptr);
-        
-        // Find previous
-        g_signal_connect(prev_btn, "clicked", G_CALLBACK(+[](GtkButton*, gpointer) {
-            if (current_web_view && find_entry) {
-                webkit_find_controller_search_previous(
-                    webkit_web_view_get_find_controller(current_web_view));
-            }
-        }), nullptr);
-        
-        // Close find bar
-        g_signal_connect(close_btn, "clicked", G_CALLBACK(+[](GtkButton*, gpointer win) {
-            if (find_bar && current_web_view) {
-                webkit_find_controller_search_finish(
-                    webkit_web_view_get_find_controller(current_web_view));
-                gtk_widget_hide(find_bar);
-            }
-        }), window);
-        
-        // Real-time search
-        g_signal_connect(find_entry, "changed", G_CALLBACK(+[](GtkEditable*, gpointer) {
-            if (current_web_view && find_entry) {
-                const char* text = gtk_entry_get_text(GTK_ENTRY(find_entry));
-                if (text && strlen(text) > 0) {
-                    webkit_find_controller_search(
-                        webkit_web_view_get_find_controller(current_web_view),
-                        text, WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE, G_MAXUINT);
-                } else {
-                    webkit_find_controller_search_finish(
-                        webkit_web_view_get_find_controller(current_web_view));
-                }
-            }
-        }), nullptr);
-        
-        // Escape to close
-        g_signal_connect(find_entry, "key-press-event", G_CALLBACK(+[](GtkWidget*, GdkEventKey* event, gpointer) -> gboolean {
-            if (event->keyval == GDK_KEY_Escape && find_bar) {
-                gtk_widget_hide(find_bar);
-                return TRUE;
-            }
-            return FALSE;
-        }), nullptr);
-        
-        gtk_widget_show_all(find_bar);
-    }
-    
-    current_web_view = web_view;
-    gtk_widget_show(find_bar);
-    gtk_widget_grab_focus(find_entry);
-    
-    // Add to window if not already added
-    auto vbox = gtk_bin_get_child(GTK_BIN(window));
-    if (vbox && GTK_IS_BOX(vbox)) {
-        // Check if already packed
-        GList* children = gtk_container_get_children(GTK_CONTAINER(vbox));
-        bool already_packed = false;
-        for (GList* l = children; l != nullptr; l = l->next) {
-            if (GTK_WIDGET(l->data) == find_bar) {
-                already_packed = true;
+    for (const QString& iconPath : iconPaths) {
+        if (QFile::exists(iconPath)) {
+            QIcon windowIcon(iconPath);
+            if (!windowIcon.isNull()) {
+                setWindowIcon(windowIcon);
                 break;
             }
         }
-        g_list_free(children);
-        
-        if (!already_packed) {
-            gtk_box_pack_start(GTK_BOX(vbox), find_bar, FALSE, FALSE, 0);
-            gtk_box_reorder_child(GTK_BOX(vbox), find_bar, 1); // After header, before notebook
-        }
     }
+    
+    // Check if first run - show onboarding
+    if (Settings::instance().isFirstRun()) {
+        showOnboarding();
+    }
+    
+    QWidget* central_widget = new QWidget(this);
+    central_widget->setObjectName("centralWidget");
+    setCentralWidget(central_widget);
+
+    QVBoxLayout* main_layout = new QVBoxLayout(central_widget);
+    main_layout->setContentsMargins(0, 0, 0, 0);
+    main_layout->setSpacing(0);
+
+    setupTitleBar();
+    main_layout->addWidget(title_bar_);
+
+    tab_widget_ = new QTabWidget(this);
+    tab_widget_->setObjectName("tabWidget");
+    tab_widget_->setDocumentMode(true);
+    tab_widget_->setTabsClosable(true);
+    tab_widget_->setMovable(true);
+    tab_widget_->setElideMode(Qt::ElideRight);
+    connect(tab_widget_, &QTabWidget::tabCloseRequested, this, &BrowserWindow::onCloseTab);
+    connect(tab_widget_, &QTabWidget::currentChanged, this, &BrowserWindow::onTabChanged);
+    main_layout->addWidget(tab_widget_);
+
+    progress_bar_ = new QProgressBar(this);
+    progress_bar_->setObjectName("progressBar");
+    progress_bar_->setMaximumHeight(3);
+    progress_bar_->setTextVisible(false);
+    progress_bar_->setValue(0);
+    main_layout->addWidget(progress_bar_);
+
+    // Connect to settings changes for instant updates
+    connect(&Settings::instance(), &Settings::settingsChanged, this, &BrowserWindow::onSettingsChanged);
+
+    // Don't create tab here - restoreSession will handle it
 }
 
-void configure_web_view(WebKitWebView* view) {
-    auto settings = webkit_web_view_get_settings(view);
-    
-    // Setup the JS bridge for settings/history communication
-    WebView::setup_internal_page_bridge(view);
-    
-    // Inject user extensions
-    ExtensionManager::instance().inject_extensions(view);
-    std::string ua_setting = SettingsManager::instance().general().user_agent;
-    if (ua_setting == "firefox") webkit_settings_set_user_agent(settings, FIREFOX_USER_AGENT);
-    else if (ua_setting == "safari") webkit_settings_set_user_agent(settings, SAFARI_USER_AGENT);
-    else webkit_settings_set_user_agent(settings, CHROME_USER_AGENT);
-    
-    webkit_settings_set_enable_javascript(settings, TRUE);
-    webkit_settings_set_enable_developer_extras(settings, TRUE);
-    webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
-    
-    // Privacy: ITP and Content Blocking
-    g_object_set(settings, "enable-intelligent-tracking-prevention", TRUE, nullptr);
-    g_object_set(settings, "enable-write-console-messages-to-stdout", TRUE, nullptr);
-    
-    // Smooth scrolling
-    g_object_set(settings, "enable-smooth-scrolling", TRUE, nullptr);
-    
-    // Media playback
-    g_object_set(settings, "enable-media-stream", TRUE, nullptr);
-    g_object_set(settings, "enable-mediasource", TRUE, nullptr);
-    
-    // WebGL
-    g_object_set(settings, "enable-webgl", TRUE, nullptr);
-    
-    // Initialize Content Blocker
-    ContentBlocker::instance().load_filter_lists();
-    
-    g_signal_connect(view, "decide-policy", G_CALLBACK(+[](WebKitWebView* web_view, WebKitPolicyDecision* decision, WebKitPolicyDecisionType type, gpointer) -> gboolean {
-        if (type != WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION) return FALSE;
-        
-        auto action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
-        auto request = webkit_navigation_action_get_request(action);
-        const char* uri = webkit_uri_request_get_uri(request);
-        
-        if (!uri) return FALSE;
-        std::string url(uri);
-        
-        // 1. Content Blocking
-        if (SettingsManager::instance().privacy().tracking_protection != TrackingProtection::Off) {
-             if (ContentBlocker::instance().is_blocked(url)) {
-                 std::cout << "[SeaBrowser] BLOCKED: " << url << std::endl;
-                 webkit_policy_decision_ignore(decision);
-                 return TRUE;
-             }
-        }
-        
-        // 2. HTTPS-Only Mode
-        if (SettingsManager::instance().privacy().https_only && url.rfind("http://", 0) == 0) {
-             std::cout << "[SeaBrowser] Upgrading to HTTPS: " << url << std::endl;
-             std::string https_url = "https://" + url.substr(7);
-             webkit_policy_decision_ignore(decision);
-             webkit_web_view_load_uri(web_view, https_url.c_str());
-             return TRUE;
-        }
-        
-        return FALSE;
-    }), nullptr);
-    
-    auto context = webkit_web_view_get_context(view);
-    auto cookie_manager = webkit_web_context_get_cookie_manager(context);
-    auto policy = SettingsManager::instance().privacy().cookie_policy;
-    if (policy == CookiePolicy::BlockAll)
-        webkit_cookie_manager_set_accept_policy(cookie_manager, WEBKIT_COOKIE_POLICY_ACCEPT_NEVER);
-    else if (policy == CookiePolicy::AcceptAll)
-        webkit_cookie_manager_set_accept_policy(cookie_manager, WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS);
-    else
-        webkit_cookie_manager_set_accept_policy(cookie_manager, WEBKIT_COOKIE_POLICY_ACCEPT_NO_THIRD_PARTY);
-    
-    // Handle downloads
-    g_signal_connect(view, "download-started", G_CALLBACK(+[](WebKitWebView*, WebKitDownload* download, gpointer) {
-        auto request = webkit_download_get_request(download);
-        const char* uri = webkit_uri_request_get_uri(request);
-        std::string url = uri ? uri : "";
-        
-        // Get suggested filename from response or URL
-        const char* suggested_filename = nullptr;
-        auto response = webkit_download_get_response(download);
-        if (response) {
-            suggested_filename = webkit_uri_response_get_suggested_filename(response);
-        }
-        std::string filename = suggested_filename ? suggested_filename : "";
-        if (filename.empty()) {
-            // Extract from URL
-            size_t last_slash = url.find_last_of('/');
-            if (last_slash != std::string::npos && last_slash < url.length() - 1) {
-                filename = url.substr(last_slash + 1);
-            }
-        }
-        
-        std::cout << "[SeaBrowser] Download started: " << filename << " from " << url << std::endl;
-        
-        // Start tracking the download
-        std::string download_id = DownloadsManager::instance().start_download(url, filename);
-        
-        // Set download destination
-        Download* dl = DownloadsManager::instance().get_download(download_id);
-        if (dl) {
-            webkit_download_set_destination(download, ("file://" + dl->path).c_str());
-        }
-        
-        // Connect to download progress
-        g_signal_connect(download, "received-data", G_CALLBACK(+[](WebKitDownload* d, guint64 length, gpointer user_data) {
-            std::string* id = static_cast<std::string*>(user_data);
-            guint64 received = webkit_download_get_received_data_length(d);
-            
-            // Get total size from response
-            guint64 total = 0;
-            auto resp = webkit_download_get_response(d);
-            if (resp) {
-                total = webkit_uri_response_get_content_length(resp);
-            }
-            
-            // Calculate speed (this is simplified)
-            static guint64 last_received = 0;
-            static GTimer* timer = nullptr;
-            if (!timer) timer = g_timer_new();
-            
-            double elapsed = g_timer_elapsed(timer, nullptr);
-            double speed = 0;
-            if (elapsed > 0) {
-                speed = (received - last_received) / elapsed;
-                last_received = received;
-                g_timer_start(timer);
-            }
-            
-            DownloadsManager::instance().update_progress(*id, received, total, speed);
-        }), new std::string(download_id));
-        
-        // Connect to download finished
-        g_signal_connect(download, "finished", G_CALLBACK(+[](WebKitDownload*, gpointer user_data) {
-            std::string* id = static_cast<std::string*>(user_data);
-            DownloadsManager::instance().complete_download(*id);
-            delete id;
-        }), new std::string(download_id));
-        
-        // Connect to download failed
-        g_signal_connect(download, "failed", G_CALLBACK(+[](WebKitDownload*, GError* error, gpointer user_data) {
-            std::string* id = static_cast<std::string*>(user_data);
-            std::string error_msg = error ? error->message : "Unknown error";
-            DownloadsManager::instance().fail_download(*id, error_msg);
-            delete id;
-        }), new std::string(download_id));
-    }), nullptr);
+void BrowserWindow::setupTitleBar() {
+    title_bar_ = new QWidget(this);
+    title_bar_->setObjectName("titleBar");
+    title_bar_->setFixedHeight(48);
+    title_bar_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    // Enable dragging the window from the title bar
+    title_bar_->setMouseTracking(true);
+    title_bar_->installEventFilter(this);
+
+    QHBoxLayout* title_layout = new QHBoxLayout(title_bar_);
+    title_layout->setContentsMargins(12, 6, 12, 6);
+    title_layout->setSpacing(8);
+
+    QString iconPath = QCoreApplication::applicationDirPath() + "/data/icons/";
+    bool isDark = Settings::instance().getDarkMode();
+    QString iconSuffix = isDark ? "-white" : "";
+
+    // Navigation buttons - Left side
+    back_btn_ = new QToolButton(title_bar_);
+    back_btn_->setObjectName("backButton");
+    back_btn_->setFixedSize(32, 32);
+    back_btn_->setToolTip("Back");
+    back_btn_->setAutoRaise(true);
+    back_btn_->setIcon(QIcon(iconPath + "back" + iconSuffix + ".svg"));
+    back_btn_->setIconSize(QSize(16, 16));
+    connect(back_btn_, &QToolButton::clicked, this, &BrowserWindow::onBack);
+    title_layout->addWidget(back_btn_);
+
+    forward_btn_ = new QToolButton(title_bar_);
+    forward_btn_->setObjectName("forwardButton");
+    forward_btn_->setFixedSize(32, 32);
+    forward_btn_->setToolTip("Forward");
+    forward_btn_->setAutoRaise(true);
+    forward_btn_->setIcon(QIcon(iconPath + "forward" + iconSuffix + ".svg"));
+    forward_btn_->setIconSize(QSize(16, 16));
+    connect(forward_btn_, &QToolButton::clicked, this, &BrowserWindow::onForward);
+    title_layout->addWidget(forward_btn_);
+
+    reload_btn_ = new QToolButton(title_bar_);
+    reload_btn_->setObjectName("reloadButton");
+    reload_btn_->setFixedSize(32, 32);
+    reload_btn_->setToolTip("Reload");
+    reload_btn_->setAutoRaise(true);
+    reload_btn_->setIcon(QIcon(iconPath + "reload" + iconSuffix + ".svg"));
+    reload_btn_->setIconSize(QSize(16, 16));
+    connect(reload_btn_, &QToolButton::clicked, this, &BrowserWindow::onReload);
+    title_layout->addWidget(reload_btn_);
+
+    home_btn_ = new QToolButton(title_bar_);
+    home_btn_->setObjectName("homeButton");
+    home_btn_->setFixedSize(32, 32);
+    home_btn_->setToolTip("Home");
+    home_btn_->setAutoRaise(true);
+    home_btn_->setIcon(QIcon(iconPath + "home" + iconSuffix + ".svg"));
+    home_btn_->setIconSize(QSize(16, 16));
+    connect(home_btn_, &QToolButton::clicked, this, &BrowserWindow::onHome);
+    title_layout->addWidget(home_btn_);
+
+    // Spacer between nav buttons and URL bar
+    title_layout->addSpacing(12);
+
+    // URL Bar container with icons - Center
+    QWidget* url_container = new QWidget(title_bar_);
+    url_container->setObjectName("urlContainer");
+    url_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QHBoxLayout* url_layout = new QHBoxLayout(url_container);
+    url_layout->setContentsMargins(10, 0, 10, 0);
+    url_layout->setSpacing(8);
+
+    // Security icon (lock icon)
+    security_btn_ = new QToolButton(url_container);
+    security_btn_->setObjectName("securityButton");
+    security_btn_->setFixedSize(18, 18);
+    security_btn_->setAutoRaise(true);
+    security_btn_->setIcon(QIcon(iconPath + "lock" + iconSuffix + ".svg"));
+    security_btn_->setIconSize(QSize(14, 14));
+    security_btn_->setToolTip("Secure Connection");
+    connect(security_btn_, &QToolButton::clicked, this, &BrowserWindow::onSecurity);
+    url_layout->addWidget(security_btn_);
+
+    // URL input
+    url_bar_ = new QLineEdit(url_container);
+    url_bar_->setObjectName("urlBar");
+    url_bar_->setPlaceholderText("Search or enter URL...");
+    url_bar_->setFixedHeight(28);
+    url_bar_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    connect(url_bar_, &QLineEdit::returnPressed, this, &BrowserWindow::onUrlEntered);
+    url_layout->addWidget(url_bar_, 1);
+
+    // Bookmark star icon
+    bookmark_btn_ = new QToolButton(url_container);
+    bookmark_btn_->setObjectName("bookmarkButton");
+    bookmark_btn_->setFixedSize(18, 18);
+    bookmark_btn_->setAutoRaise(true);
+    bookmark_btn_->setIcon(QIcon(iconPath + "star" + iconSuffix + ".svg"));
+    bookmark_btn_->setIconSize(QSize(14, 14));
+    bookmark_btn_->setToolTip("Bookmark this page");
+    connect(bookmark_btn_, &QToolButton::clicked, this, &BrowserWindow::onBookmark);
+    url_layout->addWidget(bookmark_btn_);
+
+    title_layout->addWidget(url_container, 1);
+
+    // Spacer between URL bar and right buttons
+    title_layout->addStretch();
+
+    // Menu button - before window controls
+    menu_btn_ = new QToolButton(title_bar_);
+    menu_btn_->setObjectName("menuButton");
+    menu_btn_->setFixedSize(32, 32);
+    menu_btn_->setToolTip("Menu");
+    menu_btn_->setAutoRaise(true);
+    menu_btn_->setIcon(QIcon(iconPath + "menu" + iconSuffix + ".svg"));
+    menu_btn_->setIconSize(QSize(16, 16));
+    connect(menu_btn_, &QToolButton::clicked, this, &BrowserWindow::onMenu);
+    title_layout->addWidget(menu_btn_);
+
+    title_layout->addSpacing(12);
+
+    // Window control buttons - Right side
+    min_btn_ = new QToolButton(title_bar_);
+    min_btn_->setObjectName("minButton");
+    min_btn_->setFixedSize(30, 30);
+    min_btn_->setToolTip("Minimize");
+    min_btn_->setAutoRaise(true);
+    min_btn_->setIcon(QIcon(iconPath + "minimize" + iconSuffix + ".svg"));
+    min_btn_->setIconSize(QSize(10, 10));
+    connect(min_btn_, &QToolButton::clicked, this, &BrowserWindow::onMinimize);
+    title_layout->addWidget(min_btn_);
+
+    max_btn_ = new QToolButton(title_bar_);
+    max_btn_->setObjectName("maxButton");
+    max_btn_->setFixedSize(30, 30);
+    max_btn_->setToolTip("Maximize");
+    max_btn_->setAutoRaise(true);
+    max_btn_->setIcon(QIcon(iconPath + "maximize" + iconSuffix + ".svg"));
+    max_btn_->setIconSize(QSize(10, 10));
+    connect(max_btn_, &QToolButton::clicked, this, &BrowserWindow::onMaximize);
+    title_layout->addWidget(max_btn_);
+
+    close_btn_ = new QToolButton(title_bar_);
+    close_btn_->setObjectName("closeButton");
+    close_btn_->setFixedSize(30, 30);
+    close_btn_->setToolTip("Close");
+    close_btn_->setAutoRaise(true);
+    close_btn_->setIcon(QIcon(iconPath + "close" + iconSuffix + ".svg"));
+    close_btn_->setIconSize(QSize(10, 10));
+    connect(close_btn_, &QToolButton::clicked, this, &BrowserWindow::onClose);
+    title_layout->addWidget(close_btn_);
 }
 
-GtkWidget* BrowserWindow::create(GtkApplication* app) {
-    auto window = gtk_application_window_new(app);
-    gtk_window_set_title(GTK_WINDOW(window), "Sea Browser");
-    gtk_window_set_default_size(GTK_WINDOW(window), 1200, 800);
+void BrowserWindow::applyTheme() {
+    QString accentColor = Settings::instance().getAccentColor();
+    if (accentColor.isEmpty()) accentColor = "#3b82f6";
     
-    // Use CSD (Client Side Decorations) - We set our own titlebar so GTK handles the window manager
-    gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+    bool isDark = Settings::instance().getDarkMode();
     
-    // Set class for CSS targeting
-    gtk_style_context_add_class(gtk_widget_get_style_context(window), "sea-main-window");
+    QString bgColor = isDark ? "#030712" : "#f8fafc";
+    QString titleBg = isDark ? "#0f172a" : "#ffffff";
+    QString inputBg = isDark ? "#1e293b" : "#f1f5f9";
+    QString borderColor = isDark ? "#334155" : "#e2e8f0";
+    QString textColor = isDark ? "#e2e8f0" : "#1e293b";
+    QString tabBg = isDark ? "#0f172a" : "#e2e8f0";
+    QString tabSelected = isDark ? "#030712" : "#ffffff";
+    QString tabHover = isDark ? "#1e293b" : "#cbd5e1";
     
-    auto vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(window), vbox);
-    
-    auto url_entry = gtk_entry_new();
-    gtk_entry_set_placeholder_text(GTK_ENTRY(url_entry), "Search or enter URL...");
-    
-    // Setup header bar via GtkHeaderBar
-    auto header = setup_header_bar(window, nullptr, url_entry);
-    
-    // Set as the official titlebar
-    gtk_window_set_titlebar(GTK_WINDOW(window), header);
-    
-    // Enable window dragging on the header bar
-    g_signal_connect(header, "button-press-event", G_CALLBACK(+[](GtkWidget*, GdkEventButton* event, gpointer win) -> gboolean {
-        if (event->button == 1) {
-            gtk_window_begin_move_drag(GTK_WINDOW(win), event->button, event->x_root, event->y_root, event->time);
-            return TRUE;
+    QString style = QString(R"(
+        QWidget#centralWidget { 
+            background-color: %1; 
         }
-        return FALSE;
-    }), window);
+        QWidget#titleBar { 
+            background-color: %2; 
+            border-bottom: 1px solid %3;
+        }
+        QWidget#urlContainer {
+            background-color: %4;
+            border-radius: 16px;
+            border: 1px solid %3;
+        }
+        QWidget#urlContainer:focus-within {
+            border: 2px solid %5;
+        }
+        QToolButton { 
+            background-color: transparent; 
+            border: none; 
+            border-radius: 6px; 
+            padding: 4px; 
+            margin: 2px;
+        }
+        QToolButton:hover { 
+            background-color: rgba(0, 0, 0, 0.1); 
+        }
+        QToolButton:pressed {
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        QToolButton#closeButton:hover {
+            background-color: #e81123;
+        }
+        QToolButton#closeButton:pressed {
+            background-color: #f1707a;
+        }
+        QToolButton#minButton:hover, QToolButton#maxButton:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        QLineEdit#urlBar { 
+            background-color: transparent; 
+            color: %6; 
+            border: none;
+            padding: 4px 8px; 
+            font-size: 13px; 
+        }
+        QLineEdit#urlBar:focus { 
+            outline: none;
+        }
+        QProgressBar { 
+            background-color: transparent; 
+            border: none; 
+        }
+        QProgressBar::chunk { 
+            background-color: %5; 
+        }
+        QTabWidget::pane { 
+            background-color: %1; 
+            border: none; 
+        }
+        QTabBar::tab { 
+            background-color: %7; 
+            color: %6; 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 8px 8px 0 0; 
+            margin: 0 2px; 
+            min-width: 100px; 
+        }
+        QTabBar::tab:selected { 
+            background-color: %8; 
+            color: %6; 
+        }
+        QTabBar::tab:hover:!selected { 
+            background-color: %9; 
+            color: %6;
+        }
+    )").arg(bgColor, titleBg, borderColor, inputBg, accentColor, textColor, tabBg, tabSelected, tabHover);
     
-    auto notebook = gtk_notebook_new();
-    gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
-    gtk_widget_set_vexpand(notebook, TRUE);
+    setStyleSheet(style);
+}
 
-    // Vertical tabs support
-    bool vertical_tabs = SettingsManager::instance().appearance().vertical_tabs;
-    if (vertical_tabs) {
-        gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_LEFT);
-        gtk_widget_set_hexpand(notebook, TRUE);
-    } else {
-        gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
+void BrowserWindow::refreshIcons() {
+    QString iconPath = QCoreApplication::applicationDirPath() + "/data/icons/";
+    if (!QDir(iconPath).exists()) {
+        iconPath = QCoreApplication::applicationDirPath() + "/../share/tsunami/data/icons/";
     }
-    
-    global_tab_manager = new TabManager(GTK_NOTEBOOK(notebook), GTK_ENTRY(url_entry), GTK_WINDOW(window));
-    g_signal_connect(url_entry, "activate", G_CALLBACK(on_url_activate), global_tab_manager);
-    
-    gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-    
-    const char* first_run_env = g_getenv("SEA_BROWSER_FIRST_RUN");
-    if (first_run_env && strcmp(first_run_env, "1") == 0) {
-        global_tab_manager->create_tab("sea://setup");
-    } else {
-        global_tab_manager->create_tab(SettingsManager::instance().general().homepage);
+    if (!QDir(iconPath).exists()) {
+        iconPath = "/usr/share/tsunami/data/icons/";
     }
-    
-    // Keyboard Shortcuts (Accelerators)
-    auto accel_group = gtk_accel_group_new();
-    gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
 
-    // Ctrl+T: New Tab
-    auto new_tab_closure = g_cclosure_new(G_CALLBACK(on_new_tab_clicked), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_t, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, new_tab_closure);
+    bool isDark = Settings::instance().getDarkMode();
+    QString iconSuffix = isDark ? "-white" : "";
 
-    // Ctrl+W: Close Tab
-    auto close_tab_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager) {
-            // Store tab info for undo before closing
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) {
-                const char* uri = webkit_web_view_get_uri(view);
-                const char* title = webkit_web_view_get_title(view);
-                if (uri) {
-                    closed_tabs_stack.push_back({uri, title ? title : uri});
-                    if (closed_tabs_stack.size() > MAX_CLOSED_TABS) {
-                        closed_tabs_stack.erase(closed_tabs_stack.begin());
-                    }
-                }
-            }
-            global_tab_manager->close_current_tab();
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_w, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, close_tab_closure);
-    
-    // Ctrl+Shift+T: Reopen Closed Tab
-    auto reopen_tab_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager && !closed_tabs_stack.empty()) {
-            auto last_tab = closed_tabs_stack.back();
-            closed_tabs_stack.pop_back();
-            global_tab_manager->create_tab(last_tab.first);
-            std::cout << "[SeaBrowser] Reopened tab: " << last_tab.first << std::endl;
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_t, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK), GTK_ACCEL_VISIBLE, reopen_tab_closure);
-
-    // Ctrl+R / F5: Reload
-    auto reload_closure = g_cclosure_new(G_CALLBACK(on_reload_clicked), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_r, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, reload_closure);
-    gtk_accel_group_connect(accel_group, GDK_KEY_F5, (GdkModifierType)0, GTK_ACCEL_VISIBLE, reload_closure);
-    
-    // Ctrl+Shift+R / Ctrl+F5: Hard reload
-    auto hard_reload_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) webkit_web_view_reload_bypass_cache(view);
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_r, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK), GTK_ACCEL_VISIBLE, hard_reload_closure);
-    gtk_accel_group_connect(accel_group, GDK_KEY_F5, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, hard_reload_closure);
-
-    // Alt+Left: Back
-    auto back_closure = g_cclosure_new(G_CALLBACK(on_back_clicked), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_Left, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, back_closure);
-
-    // Alt+Right: Forward
-    auto fwd_closure = g_cclosure_new(G_CALLBACK(on_forward_clicked), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_Right, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, fwd_closure);
-
-    // Ctrl+L: Focus URL bar
-    auto focus_url_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer entry) {
-        gtk_widget_grab_focus(GTK_WIDGET(entry));
-    }), url_entry, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_l, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, focus_url_closure);
-    
-    // Ctrl+K: Focus URL bar for search
-    auto focus_search_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer entry) {
-        gtk_entry_set_text(GTK_ENTRY(entry), "");
-        gtk_widget_grab_focus(GTK_WIDGET(entry));
-    }), url_entry, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_k, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, focus_search_closure);
-
-    // F12: Dev Tools
-    auto dev_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager) {
-            auto web_view = global_tab_manager->get_current_web_view();
-            if (web_view) {
-                auto inspector = webkit_web_view_get_inspector(web_view);
-                if (webkit_web_inspector_is_attached(inspector)) webkit_web_inspector_close(inspector);
-                else webkit_web_inspector_show(inspector);
-            }
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_F12, (GdkModifierType)0, GTK_ACCEL_VISIBLE, dev_closure);
-    
-    // F11: Fullscreen
-    auto fullscreen_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer win) {
-        GdkWindow* gdk_win = gtk_widget_get_window(GTK_WIDGET(win));
-        if (gdk_win && gdk_window_get_state(gdk_win) & GDK_WINDOW_STATE_FULLSCREEN) {
-            gtk_window_unfullscreen(GTK_WINDOW(win));
-        } else {
-            gtk_window_fullscreen(GTK_WINDOW(win));
-        }
-    }), window, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_F11, (GdkModifierType)0, GTK_ACCEL_VISIBLE, fullscreen_closure);
-    
-    // Ctrl+F: Find in page
-    auto find_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer win) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) show_find_bar(GTK_WINDOW(win), view);
-        }
-    }), window, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_f, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, find_closure);
-    
-    // Ctrl++: Zoom in
-    auto zoom_in_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) {
-                double zoom = webkit_web_view_get_zoom_level(view);
-                webkit_web_view_set_zoom_level(view, zoom + 0.1);
-            }
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_plus, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, zoom_in_closure);
-    gtk_accel_group_connect(accel_group, GDK_KEY_equal, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, zoom_in_closure);
-    
-    // Ctrl+-: Zoom out
-    auto zoom_out_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) {
-                double zoom = webkit_web_view_get_zoom_level(view);
-                webkit_web_view_set_zoom_level(view, std::max(0.25, zoom - 0.1));
-            }
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_minus, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, zoom_out_closure);
-    
-    // Ctrl+0: Reset zoom
-    auto zoom_reset_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) webkit_web_view_set_zoom_level(view, 1.0);
-        }
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_0, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, zoom_reset_closure);
-    
-    // Store notebook reference for shortcuts
-    g_object_set_data(G_OBJECT(window), "notebook", notebook);
-    
-    // Ctrl+Tab: Next tab
-    auto next_tab_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer win) {
-        auto nb = GTK_WIDGET(g_object_get_data(G_OBJECT(win), "notebook"));
-        if (nb && global_tab_manager) {
-            int current = gtk_notebook_get_current_page(GTK_NOTEBOOK(nb));
-            int total = gtk_notebook_get_n_pages(GTK_NOTEBOOK(nb));
-            if (current < total - 1) {
-                gtk_notebook_set_current_page(GTK_NOTEBOOK(nb), current + 1);
-            } else {
-                gtk_notebook_set_current_page(GTK_NOTEBOOK(nb), 0);
-            }
-        }
-    }), window, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_Tab, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, next_tab_closure);
-    
-    // Ctrl+Shift+Tab: Previous tab
-    auto prev_tab_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer win) {
-        auto nb = GTK_WIDGET(g_object_get_data(G_OBJECT(win), "notebook"));
-        if (nb && global_tab_manager) {
-            int current = gtk_notebook_get_current_page(GTK_NOTEBOOK(nb));
-            if (current > 0) {
-                gtk_notebook_set_current_page(GTK_NOTEBOOK(nb), current - 1);
-            } else {
-                int total = gtk_notebook_get_n_pages(GTK_NOTEBOOK(nb));
-                gtk_notebook_set_current_page(GTK_NOTEBOOK(nb), total - 1);
-            }
-        }
-    }), window, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_ISO_Left_Tab, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK), GTK_ACCEL_VISIBLE, prev_tab_closure);
-    
-    // Ctrl+[1-8]: Go to tab N (Ctrl+9 goes to last tab)
-    for (int i = 0; i < 8; i++) {
-        // Create a struct to hold both window and tab number
-        struct GotoTabData { GtkWidget* win; int tab; };
-        auto* goto_data = new GotoTabData{window, i};
-        auto goto_tab_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer data) {
-            auto* gtd = static_cast<GotoTabData*>(data);
-            if (gtd) {
-                auto nb = GTK_WIDGET(g_object_get_data(G_OBJECT(gtd->win), "notebook"));
-                if (nb && gtd->tab < gtk_notebook_get_n_pages(GTK_NOTEBOOK(nb))) {
-                    gtk_notebook_set_current_page(GTK_NOTEBOOK(nb), gtd->tab);
-                }
-            }
-        }), goto_data, nullptr);
-        gtk_accel_group_connect(accel_group, GDK_KEY_1 + i, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, goto_tab_closure);
-    }
-    // Ctrl+9: Go to last tab
-    auto goto_last_tab_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer win) {
-        if (global_tab_manager) {
-            auto nb = GTK_WIDGET(g_object_get_data(G_OBJECT(win), "notebook"));
-            if (nb) {
-                int total = gtk_notebook_get_n_pages(GTK_NOTEBOOK(nb));
-                if (total > 0) gtk_notebook_set_current_page(GTK_NOTEBOOK(nb), total - 1);
-            }
-        }
-    }), window, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_9, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, goto_last_tab_closure);
-    
-    // Ctrl+Shift+N: New Window
-    auto new_window_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer app) {
-        BrowserWindow::create(GTK_APPLICATION(app));
-    }), app, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_n, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK), GTK_ACCEL_VISIBLE, new_window_closure);
-    
-    // Ctrl+Shift+Delete: Clear browsing data
-    auto clear_data_closure = g_cclosure_new(G_CALLBACK(+[](GtkWidget*, gpointer) {
-        // Open settings to clear data page
-        if (global_tab_manager) global_tab_manager->create_tab("sea://settings#privacy");
-    }), nullptr, nullptr);
-    gtk_accel_group_connect(accel_group, GDK_KEY_Delete, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK), GTK_ACCEL_VISIBLE, clear_data_closure);
-
-#ifdef GDK_WINDOWING_X11
-    // Apply MOTIF hints to remove decorations on X11
-    auto apply_hints = +[](GtkWidget* win, GdkEvent*, gpointer) -> gboolean {
-        set_motif_hints_no_decorations(win);
-        set_kde_properties(win);
-        return FALSE;
+    QList<QToolButton*> buttons = {
+        back_btn_, forward_btn_, reload_btn_, home_btn_,
+        security_btn_, bookmark_btn_, menu_btn_,
+        min_btn_, max_btn_, close_btn_
     };
-    g_signal_connect(window, "realize", G_CALLBACK(+[](GtkWidget* win, gpointer) {
-        set_motif_hints_no_decorations(win);
-        set_kde_properties(win);
-    }), nullptr);
-    g_signal_connect(window, "map-event", G_CALLBACK(apply_hints), nullptr);
-    g_signal_connect(window, "configure-event", G_CALLBACK(apply_hints), nullptr);
-#endif
-    HistoryManager::instance().cleanup_history();
-    return window;
+
+    QStringList iconNames = {
+        "back", "forward", "reload", "home",
+        "lock", "star", "menu",
+        "minimize", "maximize", "close"
+    };
+
+    for (int i = 0; i < buttons.size(); ++i) {
+        if (buttons[i]) {
+            QString fullPath = iconPath + iconNames[i] + iconSuffix + ".svg";
+            if (QFile::exists(fullPath)) {
+                buttons[i]->setIcon(QIcon(fullPath));
+            } else {
+                QString fallbackPath = iconPath + iconNames[i] + ".svg";
+                if (QFile::exists(fallbackPath)) {
+                    buttons[i]->setIcon(QIcon(fallbackPath));
+                }
+            }
+        }
+    }
 }
 
-// Custom Header Bar using GtkHeaderBar
-GtkWidget* BrowserWindow::setup_header_bar(GtkWidget* window, GtkWidget*, GtkWidget* url_entry) {
-    auto header = gtk_header_bar_new();
-    gtk_style_context_add_class(gtk_widget_get_style_context(header), "blue-titlebar");
-    gtk_widget_set_name(header, "sea-header");
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), FALSE);
-    gtk_header_bar_set_custom_title(GTK_HEADER_BAR(header), url_entry);
-    
-    // Navigation Box (Left)
-    auto nav_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-    gtk_style_context_add_class(gtk_widget_get_style_context(nav_box), "linked");
-    
-    auto back_btn = gtk_button_new_from_icon_name("go-previous-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(back_btn), "nav-btn");
-    g_signal_connect(back_btn, "clicked", G_CALLBACK(on_back_clicked), nullptr);
-    gtk_box_pack_start(GTK_BOX(nav_box), back_btn, FALSE, FALSE, 0);
-    
-    auto forward_btn = gtk_button_new_from_icon_name("go-next-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(forward_btn), "nav-btn");
-    g_signal_connect(forward_btn, "clicked", G_CALLBACK(on_forward_clicked), nullptr);
-    gtk_box_pack_start(GTK_BOX(nav_box), forward_btn, FALSE, FALSE, 0);
-    
-    auto reload_btn = gtk_button_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(reload_btn), "nav-btn");
-    g_signal_connect(reload_btn, "clicked", G_CALLBACK(on_reload_clicked), nullptr);
-    gtk_box_pack_start(GTK_BOX(nav_box), reload_btn, FALSE, FALSE, 0);
-    
-    auto home_btn = gtk_button_new_from_icon_name("go-home-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(home_btn), "nav-btn");
-    g_signal_connect(home_btn, "clicked", G_CALLBACK(on_home_clicked), nullptr);
-    gtk_box_pack_start(GTK_BOX(nav_box), home_btn, FALSE, FALSE, 0);
+void BrowserWindow::onSettingsChanged() {
+    applyTheme();
+    refreshIcons();
+}
 
-    gtk_header_bar_pack_start(GTK_HEADER_BAR(header), nav_box);
-    
-    // Right Box (Menu + Controls)
-    auto right_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-    
-    auto new_tab_btn = gtk_button_new_from_icon_name("tab-new-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(new_tab_btn), "nav-btn");
-    g_signal_connect(new_tab_btn, "clicked", G_CALLBACK(on_new_tab_clicked), nullptr);
-    gtk_box_pack_start(GTK_BOX(right_box), new_tab_btn, FALSE, FALSE, 0);
+void BrowserWindow::showOnboarding() {
+    OnboardingDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        applyTheme();
+        refreshIcons();
+    }
+}
 
-    // Menu Button with Popup
-    auto m_btn = gtk_menu_button_new();
-    gtk_style_context_add_class(gtk_widget_get_style_context(m_btn), "nav-btn");
-    auto menu_icon = gtk_image_new_from_icon_name("open-menu-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_button_set_image(GTK_BUTTON(m_btn), menu_icon);
-    
-    auto menu = gtk_menu_new();
-    
-    auto s_item = gtk_menu_item_new_with_label("Settings");
-    g_signal_connect(s_item, "activate", G_CALLBACK(on_settings_clicked), nullptr);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), s_item);
-    
-    auto h_item = gtk_menu_item_new_with_label("History");
-    g_signal_connect(h_item, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) global_tab_manager->create_tab("sea://history");
-    }), nullptr);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), h_item);
-    
-    // Bookmarks menu item
-    auto b_item = gtk_menu_item_new_with_label("Bookmarks");
-    g_signal_connect(b_item, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) global_tab_manager->create_tab("sea://bookmarks");
-    }), nullptr);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), b_item);
-    
-    // Downloads menu item
-    auto d_item = gtk_menu_item_new_with_label("Downloads");
-    g_signal_connect(d_item, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) global_tab_manager->create_tab("sea://downloads");
-    }), nullptr);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), d_item);
+void BrowserWindow::loadUrl(const QUrl& url) {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        view->load(url);
+        view->setFocus();
+    }
+}
 
-    auto e_item = gtk_menu_item_new_with_label("Extensions");
-    g_signal_connect(e_item, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) global_tab_manager->create_tab("sea://extensions");
-    }), nullptr);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), e_item);
+void BrowserWindow::createNewTabWithUrl(const QUrl& url) {
+    createNewTab(url);
+}
+
+void BrowserWindow::onNewTab() {
+    createNewTab(QUrl::fromLocalFile(getInternalPagePath("newtab.html")));
+}
+
+void BrowserWindow::onCloseTab(int index) {
+    if (tab_widget_->count() <= 1) {
+        close();
+        return;
+    }
+    auto widget = tab_widget_->widget(index);
+    tab_widget_->removeTab(index);
+    delete widget;
+}
+
+void BrowserWindow::onTabChanged(int index) {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->widget(index));
+    if (view) {
+        updateUrlDisplay(view->url());
+    }
+}
+
+void BrowserWindow::updateUrlDisplay(const QUrl& url) {
+    QString urlStr = url.toString();
     
-    // Separator
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-    
-    // Zoom submenu
-    auto zoom_item = gtk_menu_item_new_with_label("Zoom");
-    auto zoom_menu = gtk_menu_new();
-    auto zoom_in = gtk_menu_item_new_with_label("Zoom In (+)");
-    auto zoom_out = gtk_menu_item_new_with_label("Zoom Out (-)");
-    auto zoom_reset = gtk_menu_item_new_with_label("Reset (0)");
-    
-    g_signal_connect(zoom_in, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) {
-                double zoom = webkit_web_view_get_zoom_level(view);
-                webkit_web_view_set_zoom_level(view, zoom + 0.1);
-            }
+    // Show friendly name for internal pages
+    if (urlStr.contains("newtab.html")) {
+        url_bar_->setText("");
+        url_bar_->setPlaceholderText("Search or enter URL...");
+    } else if (urlStr.contains("settings.html")) {
+        url_bar_->setText("tsunami://settings");
+    } else if (urlStr.contains("bookmarks.html")) {
+        url_bar_->setText("tsunami://bookmarks");
+    } else if (urlStr.contains("history.html")) {
+        url_bar_->setText("tsunami://history");
+    } else if (urlStr.contains("downloads.html")) {
+        url_bar_->setText("tsunami://downloads");
+    } else if (urlStr.contains("extensions.html")) {
+        url_bar_->setText("tsunami://extensions");
+    } else {
+        url_bar_->setText(urlStr);
+    }
+}
+
+void BrowserWindow::onTitleChanged(const QString& title) {
+    int index = tab_widget_->indexOf(qobject_cast<QWidget*>(sender()));
+    if (index >= 0) {
+        tab_widget_->setTabText(index, title.left(32));
+    }
+}
+
+void BrowserWindow::onLoadProgress(int progress) {
+    progress_bar_->setValue(progress);
+    if (progress == 100) {
+        progress_bar_->hide();
+    } else {
+        progress_bar_->show();
+    }
+}
+
+void BrowserWindow::onLoadFinished(bool ok) {
+    if (!ok) {
+        url_bar_->setStyleSheet("QLineEdit#urlBar { border: 1px solid #ef4444; }");
+    } else {
+        applyTheme();
+    }
+}
+
+QWebEngineView* BrowserWindow::createNewTab(const QUrl& url) {
+    QWebEngineView* view = new QWebEngineView();
+    view->setUrl(url);
+
+    connect(view, &QWebEngineView::urlChanged, this, &BrowserWindow::onUrlChanged);
+    connect(view, &QWebEngineView::titleChanged, this, &BrowserWindow::onTitleChanged);
+    connect(view, &QWebEngineView::loadProgress, this, &BrowserWindow::onLoadProgress);
+    connect(view, &QWebEngineView::loadFinished, this, &BrowserWindow::onLoadFinished);
+
+    WebView::setupPage(view->page());
+
+    int index = tab_widget_->addTab(view, "New Tab");
+    tab_widget_->setCurrentIndex(index);
+
+    updateUrlDisplay(url);
+    view->setFocus();
+
+    return view;
+}
+
+void BrowserWindow::onUrlChanged(const QUrl& url) {
+    updateUrlDisplay(url);
+}
+
+void BrowserWindow::onUrlEntered() {
+    QString input = url_bar_->text();
+    if (input.isEmpty()) return;
+
+    QUrl url = QUrl::fromUserInput(input);
+    if (!url.isValid() || (!input.contains(".") || input.contains(" "))) {
+        // Treat as search query
+        url = QUrl(QString("https://duckduckgo.com/?q=") + QUrl::toPercentEncoding(input));
+    }
+
+    loadUrl(url);
+}
+
+void BrowserWindow::onBack() {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        QWebEngineHistory* history = view->history();
+        if (history && history->canGoBack()) {
+            view->back();
         }
-    }), nullptr);
-    
-    g_signal_connect(zoom_out, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) {
-                double zoom = webkit_web_view_get_zoom_level(view);
-                webkit_web_view_set_zoom_level(view, std::max(0.25, zoom - 0.1));
-            }
+    }
+}
+
+void BrowserWindow::onForward() {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        QWebEngineHistory* history = view->history();
+        if (history && history->canGoForward()) {
+            view->forward();
         }
-    }), nullptr);
-    
-    g_signal_connect(zoom_reset, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer) {
-        if (global_tab_manager) {
-            auto view = global_tab_manager->get_current_web_view();
-            if (view) webkit_web_view_set_zoom_level(view, 1.0);
+    }
+}
+
+void BrowserWindow::onReload() {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        view->reload();
+    }
+}
+
+void BrowserWindow::onMenu() {
+    QMenu* menu = new QMenu(this);
+    menu->setStyleSheet(R"(
+        QMenu {
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 8px;
         }
-    }), nullptr);
+        QMenu::item {
+            color: #e2e8f0;
+            padding: 8px 24px;
+            border-radius: 4px;
+        }
+        QMenu::item:selected {
+            background-color: #1e293b;
+        }
+        QMenu::separator {
+            background-color: #1e293b;
+            height: 1px;
+            margin: 6px 0px;
+        }
+    )");
     
-    gtk_menu_shell_append(GTK_MENU_SHELL(zoom_menu), zoom_in);
-    gtk_menu_shell_append(GTK_MENU_SHELL(zoom_menu), zoom_out);
-    gtk_menu_shell_append(GTK_MENU_SHELL(zoom_menu), zoom_reset);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(zoom_item), zoom_menu);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), zoom_item);
-    
-    // Fullscreen menu item
-    auto fullscreen_item = gtk_menu_item_new_with_label("Fullscreen (F11)");
-    g_signal_connect(fullscreen_item, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer win) {
-        GdkWindow* gdk_win = gtk_widget_get_window(GTK_WIDGET(win));
-        if (gdk_win && gdk_window_get_state(gdk_win) & GDK_WINDOW_STATE_FULLSCREEN) {
-            gtk_window_unfullscreen(GTK_WINDOW(win));
+    menu->addAction("New Tab", this, &BrowserWindow::onNewTab);
+    menu->addAction("Open File...", this, &BrowserWindow::onOpenFile);
+    menu->addSeparator();
+    menu->addAction("Bookmarks", this, &BrowserWindow::onBookmarks);
+    menu->addAction("History", this, &BrowserWindow::onHistory);
+    menu->addAction("Downloads", this, &BrowserWindow::onDownloads);
+    menu->addAction("View Page Source", this, &BrowserWindow::onViewPageSource);
+    menu->addSeparator();
+    menu->addAction("Settings", this, &BrowserWindow::onSettings);
+    menu->addSeparator();
+    menu->addAction("Exit", this, &QWidget::close);
+
+    QPoint pos = menu_btn_->mapToGlobal(QPoint(0, menu_btn_->height()));
+    menu->exec(pos);
+    delete menu;
+}
+
+void BrowserWindow::onOpenFile() {
+    QString file = QFileDialog::getOpenFileName(this, "Open File", QString(),
+        "Web Files (*.html *.htm *.txt);;All Files (*)");
+    if (!file.isEmpty()) {
+        createNewTab(QUrl::fromLocalFile(file));
+    }
+}
+
+void BrowserWindow::onSavePage() {
+    QString file = QFileDialog::getSaveFileName(this, "Save Page As", "page.html",
+        "HTML Files (*.html);;All Files (*)");
+    if (!file.isEmpty()) {
+        auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+        if (view) {
+            view->page()->save(file, QWebEngineDownloadRequest::CompleteHtmlSaveFormat);
+        }
+    }
+}
+
+void BrowserWindow::onClearHistory() {
+    SeaBrowser::HistoryManager::instance().clear_history();
+    QMessageBox::information(this, "Clear History", "Browsing history has been cleared.");
+}
+
+void BrowserWindow::onHistory() {
+    SeaBrowser::HistoryWindow* historyWindow = new SeaBrowser::HistoryWindow(this);
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
+    historyWindow->show();
+}
+
+void BrowserWindow::onBookmarks() {
+    SeaBrowser::BookmarksWindow* bookmarksWindow = new SeaBrowser::BookmarksWindow(this);
+    bookmarksWindow->setAttribute(Qt::WA_DeleteOnClose);
+    bookmarksWindow->show();
+}
+
+void BrowserWindow::onDownloads() {
+    SeaBrowser::DownloadsWindow* downloadsWindow = new SeaBrowser::DownloadsWindow(this);
+    downloadsWindow->setAttribute(Qt::WA_DeleteOnClose);
+    downloadsWindow->show();
+}
+
+void BrowserWindow::onExtensions() {
+    SeaBrowser::ExtensionsWindow* extensionsWindow = new SeaBrowser::ExtensionsWindow(this);
+    extensionsWindow->setAttribute(Qt::WA_DeleteOnClose);
+    extensionsWindow->show();
+}
+
+void BrowserWindow::onSettings() {
+    Tsunami::SettingsDialog::showDialog(this);
+}
+
+void BrowserWindow::onAbout() {
+    QMessageBox::about(this, "About Tsunami",
+        "<h2>Tsunami Browser</h2>"
+        "<p>Version 1.0.0</p>"
+        "<p>A privacy-focused web browser built with Qt6.</p>"
+        "<p>Built by Sea Software</p>");
+}
+
+void BrowserWindow::onFullscreen() {
+    if (this->isFullScreen()) {
+        this->showNormal();
+    } else {
+        this->showFullScreen();
+    }
+}
+
+void BrowserWindow::onHome() {
+    QString homepage = Settings::instance().getHomepage();
+    if (homepage.isEmpty() || homepage == "tsunami://newtab") {
+        loadUrl(QUrl::fromLocalFile(getInternalPagePath("newtab.html")));
+    } else {
+        loadUrl(QUrl(homepage));
+    }
+}
+
+void BrowserWindow::onBookmark() {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        QString url = view->url().toString();
+        QString title = view->title();
+        // TODO: Add bookmark implementation
+        QMessageBox::information(this, "Bookmark", "Bookmark added: " + title);
+    }
+}
+
+void BrowserWindow::onSecurity() {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        QUrl url = view->url();
+        QString scheme = url.scheme();
+        if (scheme == "https") {
+            QMessageBox::information(this, "Security", "This is a secure HTTPS connection.");
+        } else if (scheme == "http") {
+            QMessageBox::warning(this, "Security", "This is an insecure HTTP connection.");
         } else {
-            gtk_window_fullscreen(GTK_WINDOW(win));
-        }
-    }), window);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), fullscreen_item);
-    
-    // Separator
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-    
-    // Quit menu item
-    auto quit_item = gtk_menu_item_new_with_label("Quit");
-    g_signal_connect(quit_item, "activate", G_CALLBACK(+[](GtkMenuItem*, gpointer win) {
-        gtk_window_close(GTK_WINDOW(win));
-    }), window);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), quit_item);
-    
-    gtk_widget_show_all(menu);
-    gtk_menu_button_set_popup(GTK_MENU_BUTTON(m_btn), menu);
-    gtk_box_pack_start(GTK_BOX(right_box), m_btn, FALSE, FALSE, 0);
-    
-    // Window Controls
-    auto win_controls = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_style_context_add_class(gtk_widget_get_style_context(win_controls), "window-controls");
-
-    auto min_btn = gtk_button_new_from_icon_name("window-minimize-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(min_btn), "win-control-btn");
-    g_signal_connect(min_btn, "clicked", G_CALLBACK(+[](GtkButton*, gpointer win) {
-        gtk_window_iconify(GTK_WINDOW(win));
-    }), window);
-    gtk_box_pack_start(GTK_BOX(win_controls), min_btn, FALSE, FALSE, 0);
-
-    auto max_btn = gtk_button_new_from_icon_name("window-maximize-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(max_btn), "win-control-btn");
-    g_signal_connect(max_btn, "clicked", G_CALLBACK(+[](GtkButton*, gpointer win) {
-        if (gtk_window_is_maximized(GTK_WINDOW(win))) gtk_window_unmaximize(GTK_WINDOW(win));
-        else gtk_window_maximize(GTK_WINDOW(win));
-    }), window);
-    gtk_box_pack_start(GTK_BOX(win_controls), max_btn, FALSE, FALSE, 0);
-
-    auto close_btn = gtk_button_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_BUTTON);
-    gtk_style_context_add_class(gtk_widget_get_style_context(close_btn), "win-control-btn");
-    gtk_style_context_add_class(gtk_widget_get_style_context(close_btn), "close-btn");
-    g_signal_connect(close_btn, "clicked", G_CALLBACK(+[](GtkButton*, gpointer win) {
-        gtk_window_close(GTK_WINDOW(win));
-    }), window);
-    gtk_box_pack_start(GTK_BOX(win_controls), close_btn, FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(right_box), win_controls, FALSE, FALSE, 10);
-    gtk_header_bar_pack_end(GTK_HEADER_BAR(header), right_box);
-    
-    g_signal_connect(window, "button-press-event", G_CALLBACK(+[](GtkWidget*, GdkEventButton* event, gpointer) -> gboolean {
-        if (event->button == 8) { on_back_clicked(nullptr, nullptr); return TRUE; }
-        else if (event->button == 9) { on_forward_clicked(nullptr, nullptr); return TRUE; }
-        return FALSE;
-    }), nullptr);
-
-    gtk_widget_show_all(header);
-    return header;
-}
-
-void BrowserWindow::on_url_activate(GtkEntry* entry, gpointer user_data) {
-    auto tab_manager = static_cast<TabManager*>(user_data);
-    auto web_view = tab_manager->get_current_web_view();
-    if (web_view) webkit_web_view_load_uri(web_view, process_url_input(gtk_entry_get_text(entry)).c_str());
-}
-
-void BrowserWindow::on_back_clicked(GtkButton*, gpointer) {
-    if (global_tab_manager) {
-        auto v = global_tab_manager->get_current_web_view();
-        if (v && webkit_web_view_can_go_back(v)) webkit_web_view_go_back(v);
-    }
-}
-
-void BrowserWindow::on_forward_clicked(GtkButton*, gpointer) {
-    if (global_tab_manager) {
-        auto v = global_tab_manager->get_current_web_view();
-        if (v && webkit_web_view_can_go_forward(v)) webkit_web_view_go_forward(v);
-    }
-}
-
-void BrowserWindow::on_reload_clicked(GtkButton*, gpointer) {
-    if (global_tab_manager) {
-        auto v = global_tab_manager->get_current_web_view();
-        if (v) webkit_web_view_reload(v);
-    }
-}
-
-void BrowserWindow::on_home_clicked(GtkButton*, gpointer) {
-    if (global_tab_manager) {
-        auto v = global_tab_manager->get_current_web_view();
-        if (v) webkit_web_view_load_uri(v, SettingsManager::instance().general().homepage.c_str());
-    }
-}
-
-void BrowserWindow::on_new_tab_clicked(GtkButton*, gpointer) {
-    if (global_tab_manager) global_tab_manager->create_tab("sea://newtab");
-}
-
-void BrowserWindow::on_settings_clicked(GtkMenuItem*, gpointer) {
-    if (global_tab_manager) global_tab_manager->create_tab("sea://settings");
-}
-
-std::string BrowserWindow::process_url_input(const std::string& input) {
-    auto trimmed = input;
-    while (!trimmed.empty() && (trimmed.front() == ' ' || trimmed.front() == '\t')) trimmed.erase(0, 1);
-    while (!trimmed.empty() && (trimmed.back() == ' ' || trimmed.back() == '\t')) trimmed.pop_back();
-    if (trimmed.empty()) return "sea://newtab";
-    if (trimmed.starts_with("sea://") || trimmed.starts_with("http://") || trimmed.starts_with("https://")) return trimmed;
-    if (is_url(trimmed)) return "https://" + trimmed;
-    return get_search_url(trimmed);
-}
-
-bool BrowserWindow::is_url(const std::string& input) {
-    if (input.find(' ') != std::string::npos) return false;
-    static const std::vector<std::string> tlds = { ".com", ".org", ".net", ".io", ".co", ".dev", ".app", ".gov", ".edu", ".ai", ".tech", ".cloud", ".design", ".blog", ".info", ".biz", ".us", ".uk", ".eu", ".de", ".fr", ".jp", ".cn", ".ru", ".in", ".br" };
-    for (const auto& tld : tlds) if (input.size() > tld.size() && input.substr(input.size() - tld.size()) == tld) return true;
-    return input.find(".") != std::string::npos && input.find("..") == std::string::npos;
-}
-
-std::string BrowserWindow::get_search_url(const std::string& query) {
-    std::string engine = SettingsManager::instance().search().default_engine;
-    std::string prefix = "https://www.google.com/search?q=";
-    if (engine == "duckduckgo") prefix = "https://duckduckgo.com/?q=";
-    else if (engine == "bing") prefix = "https://www.bing.com/search?q=";
-    else if (engine == "brave") prefix = "https://search.brave.com/search?q=";
-    else if (engine == "ecosia") prefix = "https://www.ecosia.org/search?q=";
-    else if (engine == "startpage") prefix = "https://www.startpage.com/do/dsearch?query=";
-    std::string encoded;
-    for (char c : query) {
-        if (isalnum(c)) encoded += c;
-        else if (c == ' ') encoded += '+';
-        else {
-            char buf[4];
-            snprintf(buf, sizeof(buf), "%%%02X", static_cast<unsigned char>(c));
-            encoded += buf;
+            QMessageBox::information(this, "Security", "Connection information: " + scheme);
         }
     }
-    return prefix + encoded;
 }
 
-} // namespace SeaBrowser
+void BrowserWindow::onMinimize() {
+    showMinimized();
+}
+
+void BrowserWindow::onMaximize() {
+    if (isMaximized()) {
+        showNormal();
+    } else {
+        showMaximized();
+    }
+}
+
+void BrowserWindow::onClose() {
+    close();
+}
+
+QString BrowserWindow::getInternalPagePath(const QString& page) {
+    QString appDir = QCoreApplication::applicationDirPath();
+    QStringList searchPaths = {
+        appDir + "/data/pages/" + page,
+        appDir + "/../data/pages/" + page,
+        "/usr/share/tsunami/data/pages/" + page
+    };
+    
+    for (const QString& path : searchPaths) {
+        if (QFile::exists(path)) {
+            return QFileInfo(path).absoluteFilePath();
+        }
+    }
+    
+    return appDir + "/data/pages/" + page;
+}
+
+void BrowserWindow::saveSession() {
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "Tsunami", "Browser");
+    settings.beginGroup("Session");
+    settings.setValue("windowGeometry", saveGeometry());
+    settings.setValue("tabCount", tab_widget_->count());
+
+    QStringList urls;
+    for (int i = 0; i < tab_widget_->count(); ++i) {
+        auto view = qobject_cast<QWebEngineView*>(tab_widget_->widget(i));
+        if (view) {
+            urls.append(view->url().toString());
+        }
+    }
+    settings.setValue("urls", urls);
+    settings.setValue("currentIndex", tab_widget_->currentIndex());
+    settings.endGroup();
+}
+
+void BrowserWindow::restoreSession() {
+    // Only create one new tab on startup
+    if (tab_widget_->count() == 0) {
+        createNewTab(QUrl::fromLocalFile(getInternalPagePath("newtab.html")));
+    }
+}
+
+void BrowserWindow::closeEvent(QCloseEvent* event) {
+    saveSession();
+    event->accept();
+}
+
+void BrowserWindow::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_F11) {
+        onFullscreen();
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
+void BrowserWindow::mouseDoubleClickEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        if (event->pos().y() < title_bar_->height()) {
+            if (isMaximized()) {
+                showNormal();
+            } else {
+                showMaximized();
+            }
+        }
+    }
+}
+
+void BrowserWindow::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        if (event->pos().y() < title_bar_->height()) {
+            is_dragging_ = true;
+            drag_position_ = event->globalPos() - frameGeometry().topLeft();
+            event->accept();
+        }
+    }
+}
+
+void BrowserWindow::mouseMoveEvent(QMouseEvent* event) {
+    if (is_dragging_ && (event->buttons() & Qt::LeftButton)) {
+        if (isMaximized()) {
+            showNormal();
+        }
+        move(event->globalPos() - drag_position_);
+        event->accept();
+    }
+}
+
+void BrowserWindow::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        is_dragging_ = false;
+    }
+}
+
+void BrowserWindow::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    }
+}
+
+void BrowserWindow::dropEvent(QDropEvent* event) {
+    if (event->mimeData()->hasUrls()) {
+        for (const QUrl& url : event->mimeData()->urls()) {
+            createNewTab(url);
+        }
+    }
+}
+
+bool BrowserWindow::eventFilter(QObject* obj, QEvent* event) {
+    return QMainWindow::eventFilter(obj, event);
+}
+
+} // namespace Tsunami
+
+void BrowserWindow::onViewPageSource() {
+    auto view = qobject_cast<QWebEngineView*>(tab_widget_->currentWidget());
+    if (view) {
+        QString url = view->url().toString();
+        if (!url.isEmpty()) {
+            createNewTab(QUrl("view-source:" + url));
+        }
+    }
+}

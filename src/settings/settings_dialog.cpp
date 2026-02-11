@@ -1,203 +1,450 @@
-/*
- * Sea Browser - Settings Dialog (GTK3)
- * settings_dialog.cpp
- */
-
 #include "settings_dialog.h"
-#include "settings_manager.h"
-#include <gtk/gtk.h>
+#include "settings/settings.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QTabWidget>
+#include <QSlider>
+#include <QSpinBox>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
-void SettingsDialog::show(GtkWindow* parent) {
-    // Create dialog with transient parent
-    auto dialog = gtk_dialog_new_with_buttons("Settings", parent,
-        (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR),
-        nullptr, nullptr);
+SettingsDialog::SettingsDialog(QWidget* parent)
+    : QDialog(parent)
+{
+    setWindowTitle("Settings - Tsunami");
+    setMinimumSize(600, 500);
+    resize(700, 550);
+    setModal(true);
     
-    gtk_window_set_default_size(GTK_WINDOW(dialog), 800, 600);
-    gtk_window_set_type_hint(GTK_WINDOW(dialog), GDK_WINDOW_TYPE_HINT_DIALOG);
+    applyTheme();
+    setupUi();
+    loadSettings();
     
-    auto content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    auto stack = gtk_stack_new();
-    gtk_stack_set_transition_type(GTK_STACK(stack), GTK_STACK_TRANSITION_TYPE_SLIDE_UP_DOWN);
-    
-    auto stack_sidebar = gtk_stack_sidebar_new();
-    gtk_stack_sidebar_set_stack(GTK_STACK_SIDEBAR(stack_sidebar), GTK_STACK(stack));
-    // Set size request for sidebar
-    gtk_widget_set_size_request(stack_sidebar, 200, -1);
-    
-    auto hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), stack_sidebar, FALSE, FALSE, 0);
-    
-    // Separator
-    auto sep = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-    gtk_box_pack_start(GTK_BOX(hbox), sep, FALSE, FALSE, 0);
-    
-    gtk_box_pack_start(GTK_BOX(hbox), stack, TRUE, TRUE, 0);
-    gtk_container_add(GTK_CONTAINER(content_area), hbox);
-    
-    // --- General Page ---
-    auto general_page = create_page("General", "preferences-system-symbolic");
-    
-    auto startup_section = create_section(general_page, "Startup");
-    auto homepage_entry = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(homepage_entry), SettingsManager::instance().general().homepage.c_str());
-    add_row(startup_section, homepage_entry, "Homepage", "Page to open on startup/new tab");
-    
-    gtk_stack_add_titled(GTK_STACK(stack), general_page, "general", "General");
-    
-    // --- Appearance Page ---
-    auto appearance_page = create_page("Appearance", "preferences-desktop-theme-symbolic");
-    auto theme_section = create_section(appearance_page, "Theme");
-    
-    auto theme_combo = gtk_combo_box_text_new();
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(theme_combo), "system", "System Default");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(theme_combo), "dark", "Dark Mode");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(theme_combo), "light", "Light Mode");
-    gtk_combo_box_set_active_id(GTK_COMBO_BOX(theme_combo), 
-        SettingsManager::instance().appearance().theme.c_str());
-    g_signal_connect(theme_combo, "changed", G_CALLBACK(on_theme_changed), nullptr);
-    
-    add_row(theme_section, theme_combo, "Browser Theme", "Choose the visual style of the browser");
-    gtk_stack_add_titled(GTK_STACK(stack), appearance_page, "appearance", "Appearance");
-
-    // --- Privacy Page ---
-    auto privacy_page = create_page("Privacy & Security", "security-high-symbolic");
-    auto privacy_section = create_section(privacy_page, "Tracking Protection");
-    
-    auto tp_switch = gtk_switch_new();
-    gtk_switch_set_active(GTK_SWITCH(tp_switch), 
-        SettingsManager::instance().privacy().tracking_protection != TrackingProtection::Off);
-    g_signal_connect(tp_switch, "notify::active", G_CALLBACK(on_tracking_protection_toggled), nullptr);
-    
-    add_row(privacy_section, tp_switch, "Enhanced Tracking Protection", 
-        "Block known trackers, fingerprinting, and third-party cookies");
-
-    auto ua_section = create_section(privacy_page, "Browser Identification");
-    auto ua_combo = gtk_combo_box_text_new();
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ua_combo), "firefox", "Firefox (Recommended for Privacy)");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ua_combo), "chrome", "Chrome (Best Compatibility)");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ua_combo), "safari", "Safari (Native WebKit)");
-    gtk_combo_box_set_active_id(GTK_COMBO_BOX(ua_combo), 
-        SettingsManager::instance().general().user_agent.c_str());
-    g_signal_connect(ua_combo, "changed", G_CALLBACK(on_user_agent_changed), nullptr);
-    
-    add_row(ua_section, ua_combo, "User Agent Control", 
-        "Change how websites identify your browser. Use Firefox to reduce fingerprinting and Captchas.");
-        
-    gtk_stack_add_titled(GTK_STACK(stack), privacy_page, "privacy", "Privacy");
-    
-    // --- About Page ---
-    auto about_page = create_page("About Sea Browser", "help-about-symbolic");
-    auto about_section = create_section(about_page, "Version Information");
-    
-    auto version_label = gtk_label_new("Sea Browser v1.0.0");
-    gtk_label_set_selectable(GTK_LABEL(version_label), TRUE);
-    add_row(about_section, version_label, "Version");
-    
-    auto engine_label = gtk_label_new("WebKitGTK");
-    add_row(about_section, engine_label, "Engine");
-    
-    gtk_stack_add_titled(GTK_STACK(stack), about_page, "about", "About");
-    
-    gtk_widget_show_all(dialog);
+    connect(&Settings::instance(), &Settings::settingsChanged, this, &SettingsDialog::onSettingsChanged);
 }
 
-GtkWidget* SettingsDialog::create_page(const char* title, const char* icon_name) {
-    (void)icon_name; // Unused for now
-    auto scroll = gtk_scrolled_window_new(nullptr, nullptr);
-    auto vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-    gtk_widget_set_margin_top(vbox, 24);
-    gtk_widget_set_margin_bottom(vbox, 24);
-    gtk_widget_set_margin_start(vbox, 24);
-    gtk_widget_set_margin_end(vbox, 24);
+void SettingsDialog::applyTheme() {
+    QString accentColor = Settings::instance().getAccentColor();
+    if (accentColor.isEmpty()) accentColor = "#3b82f6";
     
-    auto title_label = gtk_label_new(title);
-    auto attrs = pango_attr_list_new();
-    pango_attr_list_insert(attrs, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-    pango_attr_list_insert(attrs, pango_attr_scale_new(1.4));
-    gtk_label_set_attributes(GTK_LABEL(title_label), attrs);
-    pango_attr_list_unref(attrs);
-    gtk_widget_set_halign(title_label, GTK_ALIGN_START);
+    bool isDark = Settings::instance().getDarkMode();
     
-    gtk_box_pack_start(GTK_BOX(vbox), title_label, FALSE, FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(scroll), vbox);
+    QString bgColor = isDark ? "#0f172a" : "#ffffff";
+    QString textColor = isDark ? "#e2e8f0" : "#1e293b";
+    QString inputBg = isDark ? "#1e293b" : "#f1f5f9";
+    QString borderColor = isDark ? "#334155" : "#e2e8f0";
+    QString headerColor = isDark ? "#3b82f6" : "#2563eb";
     
-    return scroll; // Return scroll window as the page
+    setStyleSheet(QString(R"(
+        QDialog {
+            background-color: %1;
+            color: %2;
+        }
+        QLabel {
+            color: %2;
+        }
+        QComboBox {
+            background-color: %3;
+            color: %2;
+            border: 1px solid %4;
+            border-radius: 6px;
+            padding: 8px 12px;
+            min-width: 150px;
+            selection-background-color: %5;
+            selection-color: #ffffff;
+        }
+        QComboBox:hover {
+            border-color: %5;
+        }
+        QLineEdit {
+            background-color: %3;
+            color: %2;
+            border: 1px solid %4;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+        QLineEdit:focus {
+            border-color: %5;
+        }
+        QCheckBox {
+            color: %2;
+            spacing: 8px;
+        }
+        QCheckBox::indicator {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid %4;
+            background: %3;
+        }
+        QCheckBox::indicator:hover {
+            border-color: %5;
+        }
+        QCheckBox::indicator:checked {
+            background: %5;
+            border-color: %5;
+        }
+        QSlider::groove:horizontal {
+            background: %3;
+            height: 6px;
+            border-radius: 3px;
+        }
+        QSlider::handle:horizontal {
+            background: %5;
+            width: 18px;
+            margin: -6px 0;
+            border-radius: 9px;
+        }
+        QSlider::sub-page:horizontal {
+            background: %5;
+            border-radius: 3px;
+        }
+        QSpinBox {
+            background-color: %3;
+            color: %2;
+            border: 1px solid %4;
+            border-radius: 6px;
+            padding: 4px 8px;
+        }
+        QTabWidget::pane {
+            background-color: %1;
+            border: 1px solid %4;
+            border-radius: 8px;
+        }
+        QTabBar::tab {
+            background-color: %3;
+            color: %2;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-right: 4px;
+        }
+        QTabBar::tab:selected {
+            background-color: %5;
+            color: #ffffff;
+        }
+        QTabBar::tab:hover:!selected {
+            border: 1px solid %5;
+        }
+    )").arg(bgColor, textColor, inputBg, borderColor, accentColor));
 }
 
-GtkWidget* SettingsDialog::create_section(GtkWidget* page, const char* title) {
-    // Helper extracting vbox from scrolled window
-    GtkWidget* vbox = gtk_bin_get_child(GTK_BIN(page)); // viewport
-    if (GTK_IS_VIEWPORT(vbox)) vbox = gtk_bin_get_child(GTK_BIN(vbox)); // actual box
-
-    auto frame = gtk_frame_new(nullptr);
-    auto box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add(GTK_CONTAINER(frame), box);
+void SettingsDialog::setupUi() {
+    QVBoxLayout* main_layout = new QVBoxLayout(this);
+    main_layout->setContentsMargins(24, 24, 24, 24);
+    main_layout->setSpacing(16);
     
-    auto label = gtk_label_new(title);
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
-    gtk_widget_set_margin_bottom(label, 6);
-    gtk_style_context_add_class(gtk_widget_get_style_context(label), "dim-label");
+    // Title with accent color
+    QString accentColor = Settings::instance().getAccentColor();
+    QLabel* title = new QLabel("Settings");
+    title->setStyleSheet(QString("font-size: 24px; font-weight: bold; color: %1; margin-bottom: 8px;").arg(accentColor));
+    main_layout->addWidget(title);
     
-    auto attrs = pango_attr_list_new();
-    pango_attr_list_insert(attrs, pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-    gtk_label_set_attributes(GTK_LABEL(label), attrs);
-    pango_attr_list_unref(attrs);
-
-    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, FALSE, 0);
+    QLabel* subtitle = new QLabel("Customize your browsing experience");
+    subtitle->setStyleSheet("font-size: 13px; color: #64748b; margin-bottom: 16px;");
+    main_layout->addWidget(subtitle);
     
-    return box;
+    // Tab Widget
+    QTabWidget* tab_widget = new QTabWidget();
+    tab_widget->setDocumentMode(true);
+    
+    // Appearance Tab
+    QWidget* appearance_tab = new QWidget();
+    QVBoxLayout* appearance_layout = new QVBoxLayout(appearance_tab);
+    appearance_layout->setContentsMargins(20, 20, 20, 20);
+    appearance_layout->setSpacing(16);
+    
+    QLabel* appearance_header = new QLabel("Appearance");
+    appearance_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1;").arg(accentColor));
+    appearance_layout->addWidget(appearance_header);
+    
+    // Theme
+    QHBoxLayout* theme_layout = new QHBoxLayout();
+    theme_layout->addWidget(new QLabel("Theme:"));
+    theme_combo_ = new QComboBox();
+    theme_combo_->addItem("Dark", "dark");
+    theme_combo_->addItem("Light", "light");
+    theme_combo_->addItem("System", "system");
+    theme_layout->addWidget(theme_combo_);
+    theme_layout->addStretch();
+    appearance_layout->addLayout(theme_layout);
+    
+    // Dark Mode
+    dark_mode_check_ = new QCheckBox("Dark Mode");
+    appearance_layout->addWidget(dark_mode_check_);
+    
+    // Accent Color
+    QHBoxLayout* accent_layout = new QHBoxLayout();
+    accent_layout->addWidget(new QLabel("Accent Color:"));
+    accent_combo_ = new QComboBox();
+    accent_combo_->addItem("Blue", "#3b82f6");
+    accent_combo_->addItem("Red", "#ef4444");
+    accent_combo_->addItem("Green", "#22c55e");
+    accent_combo_->addItem("Orange", "#f59e0b");
+    accent_combo_->addItem("Purple", "#a855f7");
+    accent_combo_->addItem("Pink", "#ec4899");
+    accent_combo_->addItem("Cyan", "#06b6d4");
+    accent_layout->addWidget(accent_combo_);
+    accent_layout->addStretch();
+    appearance_layout->addLayout(accent_layout);
+    
+    appearance_layout->addStretch();
+    tab_widget->addTab(appearance_tab, "Appearance");
+    
+    // Privacy Tab
+    QWidget* privacy_tab = new QWidget();
+    QVBoxLayout* privacy_layout = new QVBoxLayout(privacy_tab);
+    privacy_layout->setContentsMargins(20, 20, 20, 20);
+    privacy_layout->setSpacing(16);
+    
+    QLabel* privacy_header = new QLabel("Privacy & Security");
+    privacy_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1;").arg(accentColor));
+    privacy_layout->addWidget(privacy_header);
+    
+    block_trackers_ = new QCheckBox("Block Trackers");
+    privacy_layout->addWidget(block_trackers_);
+    
+    block_ads_ = new QCheckBox("Block Ads");
+    privacy_layout->addWidget(block_ads_);
+    
+    https_only_ = new QCheckBox("HTTPS-Only Mode");
+    privacy_layout->addWidget(https_only_);
+    
+    do_not_track_ = new QCheckBox("Send Do Not Track Header");
+    privacy_layout->addWidget(do_not_track_);
+    
+    block_third_party_cookies_ = new QCheckBox("Block Third-Party Cookies");
+    privacy_layout->addWidget(block_third_party_cookies_);
+    
+    block_fingerprinting_ = new QCheckBox("Block Fingerprinting");
+    privacy_layout->addWidget(block_fingerprinting_);
+    
+    disable_webrtc_ = new QCheckBox("Disable WebRTC (prevents IP leaks)");
+    privacy_layout->addWidget(disable_webrtc_);
+    
+    privacy_layout->addStretch();
+    tab_widget->addTab(privacy_tab, "Privacy");
+    
+    // Search Tab
+    QWidget* search_tab = new QWidget();
+    QVBoxLayout* search_layout = new QVBoxLayout(search_tab);
+    search_layout->setContentsMargins(20, 20, 20, 20);
+    search_layout->setSpacing(16);
+    
+    QLabel* search_header = new QLabel("Search Engine");
+    search_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1;").arg(accentColor));
+    search_layout->addWidget(search_header);
+    
+    QHBoxLayout* search_engine_layout = new QHBoxLayout();
+    search_engine_layout->addWidget(new QLabel("Default Search Engine:"));
+    search_engine_ = new QComboBox();
+    search_engine_->addItem("DuckDuckGo", "duckduckgo");
+    search_engine_->addItem("Brave Search", "brave");
+    search_engine_->addItem("Google", "google");
+    search_engine_->addItem("Bing", "bing");
+    search_engine_->addItem("Startpage", "startpage");
+    search_engine_->addItem("Qwant", "qwant");
+    search_engine_layout->addWidget(search_engine_);
+    search_engine_layout->addStretch();
+    search_layout->addLayout(search_engine_layout);
+    
+    search_layout->addStretch();
+    tab_widget->addTab(search_tab, "Search");
+    
+    // Startup Tab
+    QWidget* startup_tab = new QWidget();
+    QVBoxLayout* startup_layout = new QVBoxLayout(startup_tab);
+    startup_layout->setContentsMargins(20, 20, 20, 20);
+    startup_layout->setSpacing(16);
+    
+    QLabel* startup_header = new QLabel("Startup");
+    startup_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1;").arg(accentColor));
+    startup_layout->addWidget(startup_header);
+    
+    QHBoxLayout* homepage_layout = new QHBoxLayout();
+    homepage_layout->addWidget(new QLabel("Homepage:"));
+    homepage_edit_ = new QLineEdit();
+    homepage_edit_->setPlaceholderText("https://... or tsunami://newtab");
+    homepage_layout->addWidget(homepage_edit_);
+    startup_layout->addLayout(homepage_layout);
+    
+    restore_tabs_ = new QCheckBox("Restore tabs on startup");
+    startup_layout->addWidget(restore_tabs_);
+    
+    auto_reload_ = new QCheckBox("Auto-reload pages");
+    startup_layout->addWidget(auto_reload_);
+    
+    QHBoxLayout* reload_layout = new QHBoxLayout();
+    reload_layout->addWidget(new QLabel("Auto-reload interval:"));
+    auto_reload_interval_ = new QSpinBox();
+    auto_reload_interval_->setRange(5, 3600);
+    auto_reload_interval_->setSuffix(" seconds");
+    reload_layout->addWidget(auto_reload_interval_);
+    reload_layout->addStretch();
+    startup_layout->addLayout(reload_layout);
+    
+    startup_layout->addStretch();
+    tab_widget->addTab(startup_tab, "Startup");
+    
+    // Advanced Tab
+    QWidget* advanced_tab = new QWidget();
+    QVBoxLayout* advanced_layout = new QVBoxLayout(advanced_tab);
+    advanced_layout->setContentsMargins(20, 20, 20, 20);
+    advanced_layout->setSpacing(16);
+    
+    QLabel* advanced_header = new QLabel("Advanced");
+    advanced_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1;").arg(accentColor));
+    advanced_layout->addWidget(advanced_header);
+    
+    QHBoxLayout* zoom_layout = new QHBoxLayout();
+    zoom_layout->addWidget(new QLabel("Default Zoom:"));
+    zoom_level_ = new QSlider(Qt::Horizontal);
+    zoom_level_->setRange(25, 200);
+    zoom_level_->setValue(100);
+    zoom_layout->addWidget(zoom_level_);
+    zoom_label_ = new QLabel("100%");
+    zoom_layout->addWidget(zoom_label_);
+    connect(zoom_level_, &QSlider::valueChanged, this, [this](int value) {
+        zoom_label_->setText(QString::number(value) + "%");
+    });
+    advanced_layout->addLayout(zoom_layout);
+    
+    show_bookmarks_bar_ = new QCheckBox("Show bookmarks bar by default");
+    advanced_layout->addWidget(show_bookmarks_bar_);
+    
+    auto_clear_cache_ = new QCheckBox("Auto-clear cache on exit");
+    advanced_layout->addWidget(auto_clear_cache_);
+    
+    advanced_layout->addStretch();
+    tab_widget->addTab(advanced_tab, "Advanced");
+    
+    main_layout->addWidget(tab_widget);
+    
+    // Buttons
+    QHBoxLayout* button_layout = new QHBoxLayout();
+    button_layout->addStretch();
+    
+    QPushButton* reset_btn = new QPushButton("Reset to Defaults");
+    reset_btn->setStyleSheet(QString("QPushButton { background-color: %1; color: white; border: none; border-radius: 6px; padding: 10px 20px; } QPushButton:hover { opacity: 0.9; }").arg(Settings::instance().getAccentColor()));
+    connect(reset_btn, &QPushButton::clicked, this, &SettingsDialog::resetSettings);
+    button_layout->addWidget(reset_btn);
+    
+    QPushButton* cancel_btn = new QPushButton("Cancel");
+    cancel_btn->setStyleSheet("QPushButton { background-color: #475569; color: white; border: none; border-radius: 6px; padding: 10px 20px; } QPushButton:hover { background-color: #64748b; }");
+    connect(cancel_btn, &QPushButton::clicked, this, &QDialog::reject);
+    button_layout->addWidget(cancel_btn);
+    
+    QPushButton* save_btn = new QPushButton("Save Changes");
+    save_btn->setStyleSheet(QString("QPushButton { background-color: %1; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-weight: 600; } QPushButton:hover { opacity: 0.9; }").arg(Settings::instance().getAccentColor()));
+    connect(save_btn, &QPushButton::clicked, this, &SettingsDialog::saveSettings);
+    button_layout->addWidget(save_btn);
+    
+    main_layout->addLayout(button_layout);
 }
 
-void SettingsDialog::add_row(GtkWidget* section, GtkWidget* widget, const char* title, const char* subtitle) {
-    auto row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-    gtk_widget_set_size_request(row, -1, 50);
-    gtk_container_set_border_width(GTK_CONTAINER(row), 12);
+void SettingsDialog::loadSettings() {
+    auto& settings = Settings::instance();
     
-    auto labels_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
-    auto title_label = gtk_label_new(title);
-    gtk_widget_set_halign(title_label, GTK_ALIGN_START);
-    gtk_box_pack_start(GTK_BOX(labels_box), title_label, FALSE, FALSE, 0);
+    // Theme
+    QString theme = settings.getTheme();
+    int theme_index = theme_combo_->findData(theme);
+    if (theme_index >= 0) theme_combo_->setCurrentIndex(theme_index);
     
-    if (subtitle) {
-        auto subtitle_label = gtk_label_new(subtitle);
-        gtk_widget_set_halign(subtitle_label, GTK_ALIGN_START);
-        gtk_style_context_add_class(gtk_widget_get_style_context(subtitle_label), "dim-label");
-        gtk_label_set_attributes(GTK_LABEL(subtitle_label), pango_attr_list_new()); // Clear attrs
-        // Manual formatting via markup
-        char* markup = g_strdup_printf("<small>%s</small>", subtitle);
-        gtk_label_set_markup(GTK_LABEL(subtitle_label), markup);
-        g_free(markup);
-        gtk_box_pack_start(GTK_BOX(labels_box), subtitle_label, FALSE, FALSE, 0);
+    // Dark mode
+    dark_mode_check_->setChecked(settings.getDarkMode());
+    
+    // Accent color
+    QString accent = settings.getAccentColor();
+    int accent_index = accent_combo_->findData(accent);
+    if (accent_index >= 0) accent_combo_->setCurrentIndex(accent_index);
+    
+    // Privacy
+    block_trackers_->setChecked(settings.getBlockTrackers());
+    block_ads_->setChecked(settings.getBlockAds());
+    https_only_->setChecked(settings.getHttpsOnly());
+    do_not_track_->setChecked(settings.getDoNotTrack());
+    block_third_party_cookies_->setChecked(settings.getBlockThirdPartyCookies());
+    block_fingerprinting_->setChecked(settings.getBlockFingerprinting());
+    disable_webrtc_->setChecked(settings.getDisableWebRTC());
+    
+    // Search
+    QString engine = settings.getSearchEngine();
+    int engine_index = search_engine_->findData(engine);
+    if (engine_index >= 0) search_engine_->setCurrentIndex(engine_index);
+    
+    // Startup
+    homepage_edit_->setText(settings.getHomepage());
+    restore_tabs_->setChecked(settings.getRestoreTabs());
+    auto_reload_->setChecked(settings.getAutoReload());
+    auto_reload_interval_->setValue(settings.getAutoReloadInterval());
+    
+    // Advanced
+    zoom_level_->setValue(settings.getZoomLevel());
+    zoom_label_->setText(QString::number(settings.getZoomLevel()) + "%");
+    show_bookmarks_bar_->setChecked(settings.getShowBookmarksBar());
+    auto_clear_cache_->setChecked(settings.getAutoClearCache());
+}
+
+void SettingsDialog::saveSettings() {
+    auto& settings = Settings::instance();
+    
+    // Theme
+    settings.setTheme(theme_combo_->currentData().toString());
+    settings.setDarkMode(dark_mode_check_->isChecked());
+    settings.setAccentColor(accent_combo_->currentData().toString());
+    
+    // Privacy
+    settings.setBlockTrackers(block_trackers_->isChecked());
+    settings.setBlockAds(block_ads_->isChecked());
+    settings.setHttpsOnly(https_only_->isChecked());
+    settings.setDoNotTrack(do_not_track_->isChecked());
+    settings.setBlockThirdPartyCookies(block_third_party_cookies_->isChecked());
+    settings.setBlockFingerprinting(block_fingerprinting_->isChecked());
+    settings.setDisableWebRTC(disable_webrtc_->isChecked());
+    
+    // Search
+    settings.setSearchEngine(search_engine_->currentData().toString());
+    
+    // Startup
+    settings.setHomepage(homepage_edit_->text());
+    settings.setRestoreTabs(restore_tabs_->isChecked());
+    settings.setAutoReload(auto_reload_->isChecked());
+    settings.setAutoReloadInterval(auto_reload_interval_->value());
+    
+    // Advanced
+    settings.setZoomLevel(zoom_level_->value());
+    settings.setShowBookmarksBar(show_bookmarks_bar_->isChecked());
+    settings.setAutoClearCache(auto_clear_cache_->isChecked());
+    
+    QMessageBox::information(this, "Settings Saved", "Your settings have been saved and applied.");
+    accept();
+}
+
+void SettingsDialog::resetSettings() {
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Reset Settings", 
+        "Are you sure you want to reset all settings to defaults?",
+        QMessageBox::Yes | QMessageBox::No);
+    
+    if (reply == QMessageBox::Yes) {
+        Settings::instance().reset();
+        applyTheme();
+        loadSettings();
+        QMessageBox::information(this, "Settings Reset", "All settings have been reset to defaults.");
     }
-    
-    gtk_box_pack_start(GTK_BOX(row), labels_box, TRUE, TRUE, 0);
-    gtk_box_pack_end(GTK_BOX(row), widget, FALSE, FALSE, 0);
-    
-    auto list = gtk_list_box_new();
-    gtk_list_box_set_selection_mode(GTK_LIST_BOX(list), GTK_SELECTION_NONE);
-    gtk_container_add(GTK_CONTAINER(list), row);
-    gtk_box_pack_start(GTK_BOX(section), list, FALSE, FALSE, 0); // Pack into section box
 }
 
-void SettingsDialog::on_theme_changed(GtkComboBoxText* combo, gpointer) {
-    const char* id = gtk_combo_box_get_active_id(GTK_COMBO_BOX(combo));
-    if (id) SettingsManager::instance().set_theme(id);
+void SettingsDialog::onSettingsChanged() {
+    applyTheme();
 }
 
-void SettingsDialog::on_user_agent_changed(GtkComboBoxText* combo, gpointer) {
-    const char* id = gtk_combo_box_get_active_id(GTK_COMBO_BOX(combo));
-    if (id) SettingsManager::instance().general().user_agent = id;
-    SettingsManager::instance().save();
+void SettingsDialog::showDialog(QWidget* parent) {
+    SettingsDialog dialog(parent);
+    dialog.exec();
 }
 
-void SettingsDialog::on_tracking_protection_toggled(GtkSwitch* sw, gpointer) {
-    bool active = gtk_switch_get_active(sw);
-    SettingsManager::instance().set_tracking_protection(
-        active ? TrackingProtection::Strict : TrackingProtection::Off);
-}
-
-} // namespace SeaBrowser
+} // namespace Tsunami

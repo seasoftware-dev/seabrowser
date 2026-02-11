@@ -1,378 +1,247 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New Tab - Sea Browser</title>
-    <link rel="stylesheet" href="sea://resources/font-awesome.css">
+    <title>New Tab - Tsunami</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --search-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --accent-color: #3b82f6;
+            --accent-dark: #2563eb;
+            --accent-light: #60a5fa;
+            --btn-hover: #eff6ff;
         }
-
+        
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(-45deg, #0a0a14, #0d1117, #161b22, #0a0a14);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: #e4e4e4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            margin: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-
-        @keyframes gradientBG {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+        
+        body.dark-mode {
+            --bg-color: #030712;
+            --text-color: #e2e8f0;
+            --text-muted: #64748b;
+            --search-bg: rgba(15, 23, 42, 0.8);
+            --border-color: #1e293b;
+            --btn-hover: rgba(59, 130, 246, 0.1);
         }
-
-        /* Subtle Grid Background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-        }
-
-        .content {
-            position: relative;
-            z-index: 1;
+        
+        .container {
             text-align: center;
+            padding: 40px 20px;
             max-width: 700px;
             width: 100%;
         }
-
-        /* Animated Logo */
-        .logo-container {
+        
+        .logo {
             width: 80px;
             height: 80px;
-            margin: 0 auto 32px;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        .logo-svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 4px 20px rgba(59, 130, 246, 0.4));
-        }
-
-        .logo-wave {
-            animation: wave 2s ease-in-out infinite;
-            transform-origin: center;
-        }
-
-        @keyframes wave {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-3px);
-            }
-        }
-
-        /* Search Box */
-        .search-container {
-            position: relative;
-            margin-bottom: 48px;
-            animation: slideUp 0.6s ease-out 0.2s both;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .search-box {
-            width: 100%;
-            max-width: 580px;
-            padding: 16px 24px;
-            font-size: 1rem;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 16px;
-            background: rgba(13, 17, 23, 0.8);
-            backdrop-filter: blur(10px);
-            color: #fff;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .search-box:focus {
-            border-color: #3b82f6;
-            box-shadow:
-                0 4px 20px rgba(0, 0, 0, 0.3),
-                0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-
-        .search-box::placeholder {
-            color: #6b7280;
-        }
-
-        .search-container {
-            position: relative;
-        }
-
-        .search-container::before {
-            content: '\f002';
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .search-box {
-            padding-left: 48px;
-        }
-
-        /* Quick Links */
-        .shortcuts {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 16px;
-            max-width: 500px;
-            margin: 0 auto;
-            animation: slideUp 0.6s ease-out 0.4s both;
-        }
-
-        .shortcut {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 20px 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            color: #e4e4e4;
-        }
-
-        .shortcut:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
-        }
-
-        .shortcut-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .shortcut-title {
-            font-size: 0.85rem;
-            color: #8b949e;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-
-        /* Recent Sites */
-        .recent-section {
-            margin-top: 48px;
-            animation: slideUp 0.6s ease-out 0.6s both;
-        }
-
-        .section-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6b7280;
-            margin-bottom: 16px;
-        }
-
-        .recent-sites {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .site-card {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            color: #e4e4e4;
-        }
-
-        .site-card:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.2);
-        }
-
-        .site-icon {
-            font-size: 1rem;
-        }
-
-        /* Privacy Badge */
-        .privacy-badge {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(13, 17, 23, 0.9);
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
             border-radius: 20px;
-            font-size: 0.8rem;
-            color: #8b949e;
-            animation: fadeIn 1s ease-out 1s both;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
         }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+        
+        .logo svg { width: 48px; height: 48px; fill: white; }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        
+        .search-box {
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 4px;
+            display: flex;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-input::placeholder { color: var(--text-muted); }
+        
+        .search-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .search-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .footer {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .footer a { color: var(--accent-color); text-decoration: none; }
+        
+        .shortcuts {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .shortcut {
+            background: var(--search-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .shortcut:hover {
+            background: var(--btn-hover);
+            border-color: var(--accent-color);
         }
     </style>
 </head>
-
 <body>
-    <div class="content">
-        <!-- Animated Logo -->
-        <div class="logo-container">
-            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#3b82f6" />
-                        <stop offset="100%" style="stop-color:#1d4ed8" />
-                    </linearGradient>
-                    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#60a5fa" />
-                        <stop offset="100%" style="stop-color:#3b82f6" />
-                    </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="45" fill="url(#oceanGrad)" opacity="0.9" />
-                <g class="logo-wave">
-                    <path d="M30 35 Q50 25, 70 35 Q50 45, 30 55 Q50 65, 70 55" fill="none" stroke="url(#waveGrad)"
-                        stroke-width="6" stroke-linecap="round" />
-                </g>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(96,165,250,0.3)" stroke-width="2" />
+    <div class="container">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
             </svg>
         </div>
-
-        <!-- Search -->
-        <div class="search-container">
-            <form id="searchForm">
-                <input type="text" id="searchInput" class="search-box" placeholder="Search the web privately..." autofocus>
-            </form>
-        </div>
-
-        <!-- Quick Links -->
+        <h1>Tsunami</h1>
+        <p class="tagline">Experience the web at full force</p>
+        
         <div class="shortcuts">
-            <a href="sea://settings" class="shortcut">
-                <div class="shortcut-icon"><i class="fa-solid fa-gear"></i></div>
-                <span class="shortcut-title">Settings</span>
-            </a>
-            <a href="sea://history" class="shortcut">
-                <div class="shortcut-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                <span class="shortcut-title">History</span>
-            </a>
-            <a href="sea://extensions" class="shortcut">
-                <div class="shortcut-icon"><i class="fa-solid fa-puzzle-piece"></i></div>
-                <span class="shortcut-title">Extensions</span>
-            </a>
-            <a href="https://duckduckgo.com" class="shortcut">
-                <div class="shortcut-icon"><i class="fa-solid fa-earth-americas"></i></div>
-                <span class="shortcut-title">DuckDuckGo</span>
-            </a>
+            <div class="shortcut" onclick="navigate('https://www.google.com')">Google</div>
+            <div class="shortcut" onclick="navigate('https://www.youtube.com')">YouTube</div>
+            <div class="shortcut" onclick="navigate('https://github.com')">GitHub</div>
+            <div class="shortcut" onclick="navigate('https://reddit.com')">Reddit</div>
         </div>
-
-        <!-- Recent Sites -->
-        <div class="recent-section">
-            <div class="section-title">Recently Visited</div>
-            <div class="recent-sites">
-                {{RECENT_SITES}}
-            </div>
+        
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search the web or enter a URL..." autofocus>
+            <button class="search-btn" onclick="search()">Search</button>
         </div>
-    </div>
-
-    <div class="privacy-badge">
-        <i class="fa-solid fa-shield-halved"></i> Tracking Protection Active
+        
+        <div class="footer">
+            Built by <a href="https://seasoftware.dev" target="_blank">Sea Software</a>
+        </div>
     </div>
 
     <script>
-        const SEARCH_URL_BASE = '{{SEARCH_URL}}';
-
-        document.getElementById('searchForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const query = document.getElementById('searchInput').value;
-            if (query.trim()) {
-                const searchUrl = SEARCH_URL_BASE + encodeURIComponent(query);
-                window.location.href = searchUrl;
+        const searchEngines = {
+            'duckduckgo': 'https://duckduckgo.com/?q=',
+            'brave': 'https://search.brave.com/search?q=',
+            'google': 'https://www.google.com/search?q=',
+            'bing': 'https://www.bing.com/search?q=',
+            'startpage': 'https://www.startpage.com/do/search?q=',
+            'qwant': 'https://www.qwant.com/?q='
+        };
+        
+        let preferredEngine = 'duckduckgo';
+        
+        function applySettings(settings) {
+            if (!settings) return;
+            
+            // Apply dark/light mode
+            document.body.classList.toggle('dark-mode', settings.darkMode !== false);
+            
+            // Apply accent color
+            if (settings.accentColor) {
+                document.documentElement.style.setProperty('--accent-color', settings.accentColor);
+                document.documentElement.style.setProperty('--accent-dark', adjustColor(settings.accentColor, -30));
+                document.documentElement.style.setProperty('--accent-light', adjustColor(settings.accentColor, 30));
             }
+            
+            // Apply search engine
+            if (settings.searchEngine && searchEngines[settings.searchEngine]) {
+                preferredEngine = settings.searchEngine;
+            }
+        }
+        
+        function adjustColor(color, amount) {
+            const hex = color.replace('#', '');
+            const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+            const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+            const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+            return '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
+        }
+        
+        function navigate(url) {
+            window.location.href = url;
+        }
+        
+        function search() {
+            const q = document.getElementById('searchInput').value;
+            if (q) {
+                if (q.includes('.') && !q.includes(' ') && q.length > 2 && !q.includes(' ')) {
+                    window.location.href = 'https://' + q;
+                } else {
+                    const engineUrl = searchEngines[preferredEngine] || searchEngines['duckduckgo'];
+                    window.location.href = engineUrl + encodeURIComponent(q);
+                }
+            }
+        }
+        
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') search();
         });
+        
+        // Try to get settings from Qt bridge
+        if (window.tunami && window.tunami.getSettings) {
+            try {
+                const settings = window.tunami.getSettings();
+                applySettings(settings);
+            } catch (e) {
+                console.log('Using default settings');
+            }
+        }
     </script>
 </body>
-
 </html>

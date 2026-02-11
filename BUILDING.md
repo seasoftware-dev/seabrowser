@@ -1,84 +1,253 @@
-# Building Sea Browser
+# Building Tsunami Browser
 
-This document outlines the steps to build Sea Browser from source.
+This guide covers building Tsunami Browser from source on various platforms.
 
 ## Prerequisites
 
-Ensure you have the following dependencies installed on your system:
+### Common Dependencies
 
-*   **C++ Compiler**: GCC 10+ or Clang 12+ (supports C++20)
-*   **Build System**: CMake 3.16+
-*   **GTK3**: Development headers (`libgtk-3-dev`)
-*   **WebKitGTK**: Development headers (`libwebkit2gtk-4.1-dev`)
-*   **SQLite3**: Development headers (`libsqlite3-dev`)
+- **CMake** 3.20+
+- **C++ Compiler** with C++20 support (GCC 11+, Clang 14+, MSVC 2022+)
+- **Qt 6.4+** with the following modules:
+  - Qt Base (Core, GUI, Widgets)
+  - Qt WebEngine
+  - Qt Sql (SQLite integration)
+- **SQLite** 3.36+
 
-### Installing Dependencies
+### Platform-Specific
 
-**Debian/Ubuntu:**
+#### Linux (Ubuntu/Debian)
+
 ```bash
-sudo apt install build-essential cmake libgtk-3-dev libwebkit2gtk-4.1-dev libsqlite3-dev
+sudo apt install cmake build-essential qt6-base-dev qt6-webengine-dev libsqlite3-dev
 ```
 
-**Fedora:**
+#### Linux (Fedora)
+
 ```bash
-sudo dnf install gcc-c++ cmake gtk3-devel webkit2gtk4.1-devel sqlite-devel
+sudo dnf install cmake gcc-c++ qt6-qtbase-devel qt6-qtwebengine-devel sqlite-devel
 ```
 
-**Arch Linux:**
+#### Linux (Arch Linux)
+
 ```bash
-sudo pacman -S base-devel cmake gtk3 webkit2gtk-4.1 sqlite
+sudo pacman -S cmake base-devel qt6-base qt6-webengine sqlite
 ```
 
-## Compilation
+#### macOS
 
-1.  **Clone the repository** (if you haven't already).
+Install [Qt 6 for macOS](https://www.qt.io/download) or via Homebrew:
 
-2.  **Run the build script**:
-    
-    The project includes a convenience script for Linux:
-    
-    ```bash
-    ./build/linux/build.sh
-    ```
+```bash
+brew install qt6 sqlite
+```
 
-    Alternatively, you can manually configure and build using CMake:
-    
-    ```bash
-    mkdir build-output
-    cd build-output
-    cmake ..
-    make -j$(nproc)
-    ```
+#### Windows
 
-## Windows Build
+Install [Qt 6 for Windows](https://www.qt.io/download) with MinGW toolchain.
 
-1.  **Install Dependencies**:
-    *   Install **Visual Studio 2022** with C++ Desktop Development.
-    *   Install **vcpkg**: `git clone https://github.com/microsoft/vcpkg && .\vcpkg\bootstrap-vcpkg.bat`
-    *   Set `VCPKG_ROOT` environment variable.
+## Building from Source
 
-2.  **Install Libraries via vcpkg**:
-    ```cmd
-    vcpkg install gtk:x64-windows webkit2gtk:x64-windows sqlite3:x64-windows
-    ```
+### Linux/macOS
 
-3.  **Build**:
-    Run `build.bat` in the project root to automatically configure and build using CMake.
-    ```cmd
-    .\build.bat
-    ```
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/Tsunami.git
+cd Tsunami
 
-4.  **Run**:
-    For windows, The executable will be in `build-win\Release\seabrowser.exe`.
-    
-    After a successful build, the binary will be located in the build directory:
-    
-    ```bash
-    ./build-output/seabrowser
-    ```
+# Create build directory
+mkdir build && cd build
+
+# Configure
+cmake ..
+
+# Build
+make -j$(nproc)
+
+# Run
+./Tsunami
+```
+
+### Windows
+
+```powershell
+# In PowerShell or Developer Command Prompt
+git clone https://github.com/yourusername/Tsunami.git
+cd Tsunami
+mkdir build
+cd build
+
+# Configure with MinGW
+cmake -G "MinGW Makefiles" ..
+mingw32-make -j$(nproc)
+
+# Run
+.\Tsunami.exe
+```
+
+## Building Packages
+
+### All Linux Packages
+
+```bash
+./scripts/build-all.sh
+```
+
+Output will be in `output/`:
+- `output/deb/` - DEB package (Ubuntu/Debian)
+- `output/rpm/` - RPM package (Fedora/openSUSE)
+- `output/flatpak/` - Flatpak bundle
+- `output/appimage/` - AppImage (portable)
+
+### Individual Packages
+
+```bash
+# DEB package
+./scripts/build-deb.sh
+
+# RPM package
+./scripts/build-rpm.sh
+
+# AppImage
+./scripts/build-appimage.sh
+
+# Flatpak
+./scripts/build-flatpak.sh
+```
+
+### Windows
+
+```powershell
+# In PowerShell with Qt installed
+.\scripts\build-windows.ps1
+```
+
+Output: `output/windows/`
+
+## Cross-Compilation
+
+### Windows on Linux (MXE)
+
+Requires [MXE (Mingw-builds)](https://mingw-w64.org/doku.php/download/mingw-builds):
+
+```bash
+# Install MXE dependencies
+sudo apt install autoconf automake autopoint bash bison bzip2 \
+    flex g++ gawk gcc gettext git gperf intltool libtool \
+    make pkg-config mingw-w64
+
+# Configure and build
+cmake -DCROSS_COMPILE_WINDOWS=ON ..
+make -j$(nproc)
+```
+
+## Build Options
+
+CMake options can be configured during build:
+
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `CMAKE_BUILD_TYPE` | Build type (Debug, Release, RelWithDebInfo) | Release |
+| `CMAKE_INSTALL_PREFIX` | Installation prefix | /usr/local |
+| `CROSS_COMPILE_WINDOWS` | Enable Windows cross-compilation | OFF |
 
 ## Troubleshooting
 
-*   **Missing Dependencies**: If CMake fails to find a package, ensure the `-dev` or `-devel` packages are installed.
-*   **Compiler Errors**: Ensure your compiler supports C++20.
+### Qt WebEngine Not Found
 
+Ensure Qt WebEngine is installed:
+- Ubuntu/Debian: `qt6-webengine-dev`
+- Fedora: `qt6-qtwebengine-devel`
+- Arch: `qt6-webengine`
+- macOS/Windows: Install via Qt installer
+
+### Build Errors
+
+If you encounter build errors:
+
+1. Clean the build directory:
+   ```bash
+   rm -rf build && mkdir build && cd build
+   ```
+
+2. Update submodules (if any):
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+3. Ensure you have the latest Qt version:
+   ```bash
+   qmake --version
+   ```
+
+### Runtime Issues
+
+- **Blank pages**: Ensure Qt WebEngine process can access GPU
+- **Crashes**: Try running with `QT_QPA_PLATFORM=wayland` or `xcb`
+- **Icons missing**: Check that `data/icons/` is copied to the build directory
+
+## Dependencies List
+
+### Runtime Dependencies
+
+| Dependency | Minimum Version | Description |
+|------------|----------------|-------------|
+| Qt Core | 6.4 | Application framework |
+| Qt WebEngine | 6.4 | Chromium-based browser engine |
+| Qt Sql | 6.4 | SQLite integration |
+| SQLite | 3.36 | Data storage |
+| libxcb | 1.15 | X11 windowing (Linux) |
+| OpenGL | 3.0+ | Hardware acceleration |
+
+### Optional Dependencies
+
+| Dependency | Description |
+|------------|-------------|
+| AppImageKit | For AppImage creation |
+| flatpak-builder | For Flatpak creation |
+| NSIS | For Windows installer |
+
+## Development
+
+### IDE Setup
+
+#### Qt Creator
+
+1. Open `CMakeLists.txt` in Qt Creator
+2. Configure with default settings
+3. Build and run
+
+#### VS Code
+
+Recommended extensions:
+- C/C++ (Microsoft)
+- CMake (Microsoft)
+- CMake Tools (Microsoft)
+
+#### CLion
+
+Open the project directory directly - CLion will detect CMake and configure automatically.
+
+## Related Documentation
+
+- [README.md](README.md) - Project overview and features
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [SECURITY.md](SECURITY.md) - Security policy
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+
+## Getting Help
+
+- [GitHub Issues](https://github.com/yourusername/Tsunami/issues) - Report build problems
+- [GitHub Discussions](https://github.com/yourusername/Tsunami/discussions) - Ask questions
+- [Discord](https://discord.gg/tsunami) - Community chat
+
+## Related Documentation
+
+- [README.md](README.md) - Project overview and features
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [SECURITY.md](SECURITY.md) - Security policy
+- [CHANGELOG.md](CHANGELOG.md) - Version history

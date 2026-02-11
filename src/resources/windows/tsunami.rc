@@ -1,0 +1,41 @@
+#include <windows.h>
+
+// Version information
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+FILEFLAGS 0x1L
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS 0x4L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "Tsunami Developers"
+            VALUE "FileDescription", "Tsunami Web Browser"
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "InternalName", "Tsunami"
+            VALUE "LegalCopyright", "Copyright 2024. All rights reserved."
+            VALUE "OriginalFilename", "Tsunami.exe"
+            VALUE "ProductName", "Tsunami Browser"
+            VALUE "ProductVersion", "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+// Application icon
+IDI_TSUNAMI ICON "tsunami.ico"
+
+// Small icon (16x16)
+IDI_TSUNAMI_SMALL ICON "tsunami_sm.ico"

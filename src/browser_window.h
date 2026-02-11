@@ -1,39 +1,106 @@
-/*
- * Sea Browser - Privacy-focused web browser
- * browser_window.h - Main browser window (GTK3)
- */
-
 #pragma once
 
-#include <gtk/gtk.h>
-#include <webkit2/webkit2.h>
-#include <string>
-#include <vector>
-#include <memory>
-#include "tab_manager.h"
+#include <QMainWindow>
+#include <QTabWidget>
+#include <QLineEdit>
+#include <QProgressBar>
+#include <QToolButton>
+#include <QString>
+#include <QUrl>
+#include <QWebEngineView>
+#include <QCloseEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
-namespace SeaBrowser {
+#include "settings/settings.h"
 
-// Make this available to tab_manager
-void configure_web_view(WebKitWebView* view);
+namespace Tsunami {
 
-class BrowserWindow {
+class BrowserWindow : public QMainWindow {
+    Q_OBJECT
 public:
-    static GtkWidget* create(GtkApplication* app);
+    explicit BrowserWindow(QWidget* parent = nullptr);
+    ~BrowserWindow();
+    
+    void show();
+    void loadUrl(const QUrl& url);
+    void createNewTabWithUrl(const QUrl& url);
+    
+private slots:
+    void onNewTab();
+    void onCloseTab(int index);
+    void onTabChanged(int index);
+    void updateUrlDisplay(const QUrl& url);
+    void onTitleChanged(const QString& title);
+    void onLoadProgress(int progress);
+    void onLoadFinished(bool ok);
+    void onUrlChanged(const QUrl& url);
+    void onUrlEntered();
+    void onBack();
+    void onForward();
+    void onReload();
+    void onMenu();
+    void onOpenFile();
+    void onSavePage();
+    void onClearHistory();
+    void onHistory();
+    void onBookmarks();
+    void onDownloads();
+    void onExtensions();
+    void onSettings();
+    void onAbout();
+    void onFullscreen();
+    void onHome();
+    void onBookmark();
+    void onSecurity();
+    void onMinimize();
+    void onMaximize();
+    void onClose();
+    void onViewPageSource();
+    void onSettingsChanged();
+    
+protected:
+    void closeEvent(QCloseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
     
 private:
-    static GtkWidget* setup_header_bar(GtkWidget* window, GtkWidget* web_view, GtkWidget* url_entry);
-    static void on_url_activate(GtkEntry* entry, gpointer user_data);
-    static void on_back_clicked(GtkButton* button, gpointer user_data);
-    static void on_forward_clicked(GtkButton* button, gpointer user_data);
-    static void on_reload_clicked(GtkButton* button, gpointer user_data);
-    static void on_home_clicked(GtkButton* button, gpointer user_data);
-    static void on_new_tab_clicked(GtkButton* button, gpointer user_data);
-    static void on_settings_clicked(GtkMenuItem* item, gpointer user_data);
+    void setupUi();
+    void setupTitleBar();
+    void applyTheme();
+    void refreshIcons();
+    void showOnboarding();
+    QWebEngineView* createNewTab(const QUrl& url);
+    QString getInternalPagePath(const QString& page);
+    void saveSession();
+    void restoreSession();
     
-    static std::string process_url_input(const std::string& input);
-    static bool is_url(const std::string& input);
-    static std::string get_search_url(const std::string& query);
+    QWidget* central_widget_;
+    QTabWidget* tab_widget_;
+    QLineEdit* url_bar_;
+    QWidget* title_bar_;
+    QProgressBar* progress_bar_;
+    QToolButton* menu_btn_;
+    QToolButton* back_btn_;
+    QToolButton* forward_btn_;
+    QToolButton* reload_btn_;
+    QToolButton* home_btn_;
+    QToolButton* bookmark_btn_;
+    QToolButton* security_btn_;
+    QToolButton* min_btn_;
+    QToolButton* max_btn_;
+    QToolButton* close_btn_;
+    
+    bool is_dragging_;
+    QPoint drag_position_;
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami

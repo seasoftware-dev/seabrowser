@@ -1,51 +1,17 @@
-/* Main Window */
+/* Sea Browser - Dark Blue Theme */
 window {
-    background-color: #050b18;
+    background-color: #030712;
     color: #f8fafc;
 }
 
-/* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
-/* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
-/* ===== HEADER BAR - Vibrant Blue Sea Theme ===== */
+/* ===== HEADER BAR - Dark Blue Sea Theme ===== */
 #sea-header {
-    background-color: #2563eb !important;
-    background-image: linear-gradient(to bottom, #3b82f6, #1d4ed8) !important;
-    border-bottom: 2px solid #1e3a8a !important;
+    background-color: #0f172a !important;
+    background-image: linear-gradient(to bottom, #1e293b, #0f172a) !important;
+    border-bottom: 1px solid #1e293b !important;
     padding: 0 6px;
     min-height: 48px;
     color: white !important;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Vertical tabs support */
-notebook.vertical-tabs {
-    display: flex;
-    flex-direction: row;
-}
-
-notebook.vertical-tabs header {
-    border: none;
-    border-right: 1px solid #1d4ed8;
-    padding: 8px 0;
-    min-width: 220px;
-}
-
-notebook.vertical-tabs notebook tab {
-    padding: 10px 16px;
-    border-radius: 0 8px 8px 0;
-    border-left: 3px solid transparent;
-    margin: 2px 0;
-}
-
-notebook.vertical-tabs notebook tab:checked {
-    background: rgba(37, 99, 235, 0.15);
-    border-left: 3px solid #2563eb;
-    color: #fff;
-}
-
-notebook.vertical-tabs notebook tab:hover:not(:checked) {
-    background: rgba(255, 255, 255, 0.05);
-    border-left: 3px solid rgba(59, 130, 246, 0.5);
 }
 
 /* All header buttons */
@@ -53,98 +19,53 @@ notebook.vertical-tabs notebook tab:hover:not(:checked) {
     background: transparent !important;
     border: none !important;
     border-radius: 8px !important;
-    color: white !important;
+    color: #94a3b8 !important;
     padding: 6px !important;
     margin: 0 2px !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     box-shadow: none !important;
 }
 
 #sea-header button:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #e2e8f0 !important;
 }
 
 #sea-header button:active {
-    background: rgba(255, 255, 255, 0.3) !important;
-    transform: translateY(1px);
+    background: rgba(59, 130, 246, 0.25) !important;
 }
 
-/* Specific button styles */
-.nav-btn {
-    min-width: 32px;
-    min-height: 32px;
-}
-
-/* Window Control Buttons (Min, Max, Close) */
-.win-control-btn {
-    min-width: 44px;
-    min-height: 44px;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    opacity: 0.9;
-    color: white !important;
-}
-
-.win-control-btn:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    opacity: 1;
-}
-
-.win-control-btn.close-btn:hover {
-    background: #ef4444 !important;
-}
-
-/* URL Entry - Premium Search Bar Look */
+/* URL Entry - Search Bar Look */
 #sea-header entry {
-    background-color: rgba(15, 23, 42, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
     border-radius: 12px !important;
     color: #fff !important;
     padding: 6px 14px !important;
     font-size: 14px !important;
     min-height: 34px !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     transition: all 0.2s ease;
 }
 
 #sea-header entry:focus {
-    border-color: rgba(255, 255, 255, 0.6) !important;
-    background-color: rgba(15, 23, 42, 0.9) !important;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15) !important;
+    border-color: #3b82f6 !important;
+    background-color: #0f172a !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
 }
 
-entry:focus {
-    border-color: rgba(255, 255, 255, 0.5);
-    background-color: rgba(28, 33, 40, 0.95);
-    box-shadow:
-        inset 0 1px 2px rgba(0, 0, 0, 0.2),
-        0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-entry selection {
-    background-color: #2563eb;
-    color: #fff;
-}
-
-entry image {
-    opacity: 0.6;
-}
-
-/* Tab Bar (Notebook) - Sleek Design */
+/* Tab Bar (Notebook) */
 notebook {
-    background-color: #050b18;
+    background-color: #030712;
 }
 
 notebook header {
-    background-color: rgba(13, 17, 23, 0.9);
+    background-color: rgba(15, 23, 42, 0.95);
     border: none;
     padding: 4px 8px 0 8px;
 }
 
 notebook header.top {
-    border-bottom: 1px solid #1d4ed8;
+    border-bottom: 1px solid #1e293b;
 }
 
 notebook tab {
@@ -158,30 +79,14 @@ notebook tab {
 }
 
 notebook tab:checked {
-    background: rgba(37, 99, 235, 0.1);
+    background: rgba(59, 130, 246, 0.1);
     color: #fff;
-    border-bottom: 2px solid #2563eb;
+    border-bottom: 2px solid #3b82f6;
 }
 
 notebook tab:hover:not(:checked) {
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.8);
-}
-
-/* Tab Close Button */
-notebook tab button {
-    all: unset;
-    padding: 2px;
-    min-width: 16px;
-    min-height: 16px;
-    border-radius: 4px;
-    opacity: 0.5;
-    transition: all 150ms ease;
-}
-
-notebook tab button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    opacity: 1;
 }
 
 /* Separator */
@@ -193,90 +98,67 @@ separator {
 
 /* Menu - Blurred Popup */
 menu {
-    background-color: rgba(13, 17, 23, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    background-color: rgba(15, 23, 42, 0.98);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
     padding: 6px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 menuitem {
-    padding: 8px 14px;
-    border-radius: 6px;
-    color: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: #e2e8f0;
     transition: all 150ms ease;
 }
 
 menuitem:hover {
     background: rgba(59, 130, 246, 0.2);
-    color: #fff;
+    color: #60a5fa;
 }
 
-/* Scrollbars - Minimal */
+/* Scrollbars */
 scrollbar {
     background: transparent;
 }
 
 scrollbar slider {
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(59, 130, 246, 0.3);
     border-radius: 4px;
-    min-width: 6px;
+    min-width: 8px;
     min-height: 30px;
-    transition: background 200ms ease;
 }
 
 scrollbar slider:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Spinner */
 spinner {
-    color: #2563eb;
+    color: #3b82f6;
 }
 
-/* Button groups - linked style */
-.linked button {
-    margin: 0;
-    border-radius: 0;
-}
-
-.linked button:first-child {
-    border-radius: 6px 0 0 6px;
-}
-
-.linked button:last-child {
-    border-radius: 0 6px 6px 0;
-}
-
-.linked button:only-child {
-    border-radius: 6px;
-}
-
-/* Privacy Mode Indicators */
+/* Privacy Mode */
 .incognito headerbar {
-    background: linear-gradient(180deg, rgba(88, 28, 135, 0.9) 0%, rgba(13, 17, 23, 0.9) 100%);
-}
-
-.tor-mode headerbar {
-    background: linear-gradient(180deg, rgba(126, 34, 206, 0.9) 0%, rgba(13, 17, 23, 0.9) 100%);
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.3) 0%, rgba(15, 23, 42, 0.95) 100%);
 }
 
 /* Find Bar */
 .find-bar {
-    background: rgba(13, 17, 23, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.98);
+    border-top: 1px solid #1e293b;
     padding: 8px 16px;
 }
 
 .find-bar label {
-    color: #9ca3af;
+    color: #64748b;
     font-size: 0.9rem;
 }
 
 .find-bar entry {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
     color: #fff;
     padding: 6px 12px;
 }
@@ -289,12 +171,12 @@ spinner {
 .find-bar button {
     background: transparent;
     border: none;
-    color: #9ca3af;
+    color: #64748b;
     padding: 6px 10px;
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .find-bar button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
 }

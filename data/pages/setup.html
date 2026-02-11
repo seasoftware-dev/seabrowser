@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Welcome - Sea Browser Setup</title>
+    <title>Welcome - Tsunami</title>
     <style>
         * {
             margin: 0;
@@ -13,6 +13,7 @@
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a14;
             background: linear-gradient(-45deg, #0a0a14, #0d1117, #161b22, #0a0a14);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -25,20 +26,11 @@
         }
 
         @keyframes gradientBG {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        /* Animated background particles */
         .bg-particles {
             position: fixed;
             top: 0;
@@ -60,25 +52,10 @@
         }
 
         @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(-100vh) rotate(720deg);
-                opacity: 0;
-            }
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
         }
 
         .wizard-container {
@@ -89,27 +66,17 @@
             border-radius: 20px;
             width: 520px;
             text-align: center;
-            box-shadow:
-                0 25px 50px rgba(0, 0, 0, 0.5),
-                0 0 100px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(59, 130, 246, 0.1);
             position: relative;
             z-index: 1;
             animation: slideUp 0.6s ease-out;
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity:: translateY(30px); }
+ 0; transform            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Animated Logo */
         .logo-container {
             width: 100px;
             height: 100px;
@@ -118,15 +85,8 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .logo-svg {
@@ -140,15 +100,8 @@
         }
 
         @keyframes wave {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-5px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         h1 {
@@ -173,15 +126,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .step.active {
@@ -303,11 +249,35 @@
             margin-bottom: 8px;
             color: #fff;
         }
+        
+        .color-options {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 
 <body>
-    <!-- Background Particles -->
     <div class="bg-particles">
         <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
         <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
@@ -325,6 +295,7 @@
             <div class="step-dot active" id="dot1"></div>
             <div class="step-dot" id="dot2"></div>
             <div class="step-dot" id="dot3"></div>
+            <div class="step-dot" id="dot4"></div>
         </div>
 
         <!-- Step 1: Welcome -->
@@ -338,68 +309,76 @@
                         </linearGradient>
                     </defs>
                     <circle cx="50" cy="50" r="48" fill="url(#logoGrad)" />
-                    <!-- Stylized Sea 'Z' / Wave -->
-                    <path class="logo-wave" d="M25 40 C 45 40, 55 60, 75 60 M25 40 L75 40 M25 60 L75 60"
-                        style="display:none;" /> <!-- Hidden helper -->
                     <path class="logo-wave" d="M30 40 Q 50 20, 70 40 T 70 60 Q 50 80, 30 60" fill="none"
                         stroke="#60a5fa" stroke-width="10" stroke-linecap="round" />
                 </svg>
             </div>
-            <h1>Welcome to Sea Browser</h1>
-            <p>Experience a faster, more private web.</p>
+            <h1>Welcome to Tsunami</h1>
+            <p>A fast, private, and beautiful web browser.</p>
             <button class="btn" onclick="nextStep(2)">Get Started</button>
         </div>
 
-        <!-- Step 2: Privacy Settings -->
+        <!-- Step 2: Theme -->
         <div id="step2" class="step">
-            <h2>Privacy Level</h2>
-            <p>Choose how Sea Browser protects you.</p>
+            <h2>Choose Your Theme</h2>
+            <p>Select your preferred look and feel.</p>
             <div class="options">
-                <div class="option selected" onclick="selectOption(this, 'standard')">
-                    <div class="option-icon">🛡️</div>
+                <div class="option selected" onclick="selectOption(this, 'dark', 'step2')">
+                    <div class="option-icon">🌙</div>
                     <div class="option-text">
-                        <strong>Standard</strong>
-                        <small>Block trackers and dangerous sites</small>
+                        <strong>Dark Mode</strong>
+                        <small>Easy on the eyes, perfect for night</small>
                     </div>
                 </div>
-                <div class="option" onclick="selectOption(this, 'strict')">
-                    <div class="option-icon">🔒</div>
+                <div class="option" onclick="selectOption(this, 'light', 'step2')">
+                    <div class="option-icon">☀️</div>
                     <div class="option-text">
-                        <strong>Strict</strong>
-                        <small>Maximum privacy, may break some sites</small>
-                    </div>
-                </div>
-                <div class="option" onclick="selectOption(this, 'custom')">
-                    <div class="option-icon">⚙️</div>
-                    <div class="option-text">
-                        <strong>Custom</strong>
-                        <small>Configure in settings later</small>
+                        <strong>Light Mode</strong>
+                        <small>Clean and bright for daytime</small>
                     </div>
                 </div>
             </div>
             <button class="btn" onclick="nextStep(3)">Continue</button>
+            <button class="btn btn-secondary" onclick="nextStep(3)">Skip</button>
         </div>
 
-        <!-- Step 3: Search Engine -->
+        <!-- Step 3: Accent Color -->
         <div id="step3" class="step">
+            <h2>Pick an Accent Color</h2>
+            <p>Choose your favorite accent color.</p>
+            <div class="color-options">
+                <div class="color-option selected" style="background: #3b82f6;" onclick="selectColor(this, '#3b82f6')"></div>
+                <div class="color-option" style="background: #ef4444;" onclick="selectColor(this, '#ef4444')"></div>
+                <div class="color-option" style="background: #22c55e;" onclick="selectColor(this, '#22c55e')"></div>
+                <div class="color-option" style="background: #f59e0b;" onclick="selectColor(this, '#f59e0b')"></div>
+                <div class="color-option" style="background: #a855f7;" onclick="selectColor(this, '#a855f7')"></div>
+                <div class="color-option" style="background: #ec4899;" onclick="selectColor(this, '#ec4899')"></div>
+                <div class="color-option" style="background: #06b6d4;" onclick="selectColor(this, '#06b6d4')"></div>
+            </div>
+            <button class="btn" onclick="nextStep(4)">Continue</button>
+            <button class="btn btn-secondary" onclick="nextStep(4)">Skip</button>
+        </div>
+
+        <!-- Step 4: Search Engine -->
+        <div id="step4" class="step">
             <h2>Default Search Engine</h2>
             <p>Choose your preferred search engine.</p>
             <div class="options">
-                <div class="option selected" onclick="selectOption(this, 'duckduckgo')">
+                <div class="option selected" onclick="selectOption(this, 'duckduckgo', 'step4')">
                     <div class="option-icon">🦆</div>
                     <div class="option-text">
                         <strong>DuckDuckGo</strong>
                         <small>Privacy-focused search</small>
                     </div>
                 </div>
-                <div class="option" onclick="selectOption(this, 'brave')">
+                <div class="option" onclick="selectOption(this, 'brave', 'step4')">
                     <div class="option-icon">🦁</div>
                     <div class="option-text">
                         <strong>Brave Search</strong>
-                        <small>Independent, private</small>
+                        <small>Independent, private search</small>
                     </div>
                 </div>
-                <div class="option" onclick="selectOption(this, 'google')">
+                <div class="option" onclick="selectOption(this, 'google', 'step4')">
                     <div class="option-icon">🔍</div>
                     <div class="option-text">
                         <strong>Google</strong>
@@ -414,8 +393,9 @@
     <script>
         let currentStep = 1;
         let selectedSettings = {
-            privacy: 'standard',
-            search: 'duckduckgo'
+            darkMode: true,
+            accentColor: '#3b82f6',
+            searchEngine: 'duckduckgo'
         };
 
         function nextStep(step) {
@@ -427,39 +407,32 @@
             currentStep = step;
         }
 
-        function selectOption(el, value) {
-            el.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        function selectOption(el, value, stepId) {
+            const step = document.getElementById(stepId);
+            step.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
             el.classList.add('selected');
 
-            // Store selection
-            const stepId = el.closest('.step').id;
-            if (stepId === 'step2') selectedSettings.privacy = value;
-            if (stepId === 'step3') selectedSettings.search = value;
+            if (stepId === 'step2') selectedSettings.darkMode = (value === 'dark');
+            if (stepId === 'step4') selectedSettings.searchEngine = value;
         }
 
-        function saveSetting(key, value) {
-            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
-                window.webkit.messageHandlers.sea.postMessage({
-                    action: 'saveSetting',
-                    key: key,
-                    value: String(value)
-                });
-            }
-            console.log('Saved:', key, value);
+        function selectColor(el, color) {
+            document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedSettings.accentColor = color;
         }
 
         function finishSetup() {
-            // Save all choices
-            saveSetting('tracking_protection', selectedSettings.privacy);
-            saveSetting('default_engine', selectedSettings.search);
+            if (window.tunami && window.tunami.setSetting) {
+                window.tunami.setSetting('darkMode', selectedSettings.darkMode);
+                window.tunami.setSetting('accentColor', selectedSettings.accentColor);
+                window.tunami.setSetting('searchEngine', selectedSettings.searchEngine);
+                window.tunami.setSetting('firstRun', false);
+            }
 
-            // Mark setup as complete
-            saveSetting('setup_completed', 'true'); // String 'true' for C++ parser
-
-            // Give it a moment to save before navigating
             setTimeout(() => {
-                window.location = 'sea://newtab';
-            }, 100);
+                window.location.href = 'tsunami://newtab';
+            }, 500);
         }
     </script>
 </body>

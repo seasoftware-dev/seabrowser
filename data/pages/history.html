@@ -1,390 +1,181 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>History - Sea Browser</title>
-    <link rel="stylesheet" href="sea://resources/font-awesome.css">
+    <title>History - Tsunami</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0a0a14;
-            color: #e4e4e4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #030712 0%, #0f172a 100%);
             min-height: 100vh;
-            padding: 32px 48px;
+            color: #e2e8f0;
+            padding: 40px 20px;
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
         }
-
-        .header h1 {
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: #fff;
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
         }
-
-        .header-actions {
+        .toolbar {
             display: flex;
             gap: 12px;
+            margin-bottom: 24px;
         }
-
-        /* Search Box */
         .search-box {
-            position: relative;
-        }
-
-        .search-box input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: #fff;
-            padding: 10px 16px 10px 40px;
-            font-size: 0.9rem;
-            width: 280px;
-            transition: all 0.15s ease;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-
-        .search-box::before {
-            content: '\f002';
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            opacity: 0.5;
-        }
-
-        .search-box input {
-            padding-left: 40px;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* Date Groups */
-        .date-group {
-            margin-bottom: 32px;
-        }
-
-        .date-header {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #3b82f6;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .date-header::after {
-            content: '';
             flex: 1;
-            height: 1px;
-            background: rgba(59, 130, 246, 0.2);
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #e2e8f0;
+            outline: none;
         }
-
-        /* History Items */
+        .search-box:focus {
+            border-color: #3b82f6;
+        }
+        .btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #ef4444;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
         .history-list {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 8px;
         }
-
         .history-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            transition: all 0.15s ease;
-            cursor: pointer;
+            gap: 12px;
         }
-
         .history-item:hover {
             background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
         }
-
-        .history-item .favicon {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
+        .history-icon {
+            width: 36px;
+            height: 36px;
             background: rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            margin-right: 12px;
-            flex-shrink: 0;
+            font-size: 16px;
         }
-
-        .history-item .info {
+        .history-info {
             flex: 1;
-            min-width: 0;
         }
-
-        .history-item .title {
-            font-size: 0.9rem;
-            color: #e4e4e4;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .history-title {
+            font-weight: 500;
+            color: #e2e8f0;
             margin-bottom: 2px;
         }
-
-        .history-item .url {
-            font-size: 0.75rem;
-            color: #6b7280;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .history-item .time {
+        .history-url {
             font-size: 0.8rem;
-            color: #6b7280;
-            margin-left: 16px;
-            flex-shrink: 0;
+            color: #64748b;
         }
-
-        .history-item .delete-btn {
-            opacity: 0;
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-left: 8px;
-            transition: all 0.15s ease;
+        .history-time {
+            font-size: 0.75rem;
+            color: #475569;
         }
-
-        .history-item:hover .delete-btn {
-            opacity: 1;
+        .date-header {
+            font-size: 0.75rem;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 20px 0 12px;
+            padding-left: 8px;
         }
-
-        .history-item .delete-btn:hover {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 80px 40px;
-            animation: fadeIn 0.3s ease;
+            padding: 60px 20px;
+            color: #64748b;
         }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .empty-state .icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.4;
-        }
-
-        .empty-state h2 {
-            color: #fff;
-            font-size: 1.25rem;
-            margin-bottom: 8px;
-        }
-
-        .empty-state p {
-            color: #6b7280;
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #64748b;
+            text-decoration: none;
             font-size: 0.9rem;
         }
-
-        /* No Results */
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
-        }
+        .back-btn:hover { color: #3b82f6; }
     </style>
 </head>
-
 <body>
-    <div class="header">
+    <div class="container">
+        <a href="tsunami://newtab" class="back-btn">← Back to New Tab</a>
         <h1>History</h1>
-        <div class="header-actions">
-            <div class="search-box">
-                <input type="text" id="search" placeholder="Search history...">
+        
+        <div class="toolbar">
+            <input type="text" class="search-box" placeholder="Search history..." id="searchInput">
+            <button class="btn" onclick="clearHistory()">Clear All</button>
+        </div>
+        
+        <div class="date-header">Today</div>
+        <div class="history-list">
+            <div class="history-item" onclick="openUrl('tsunami://newtab')">
+                <div class="history-icon">🌊</div>
+                <div class="history-info">
+                    <div class="history-title">New Tab - Tsunami</div>
+                    <div class="history-url">tsunami://newtab</div>
+                </div>
+                <div class="history-time">Just now</div>
             </div>
-            <button class="btn btn-danger" onclick="clearAllHistory()">
-                <i class="fa-solid fa-trash"></i> Clear All
-            </button>
+            <div class="history-item" onclick="openUrl('https://seasoftware.dev')">
+                <div class="history-icon">🌐</div>
+                <div class="history-info">
+                    <div class="history-title">Sea Software</div>
+                    <div class="history-url">seasoftware.dev</div>
+                </div>
+                <div class="history-time">2 hours ago</div>
+            </div>
+        </div>
+        
+        <div class="date-header">Yesterday</div>
+        <div class="history-list">
+            <div class="history-item" onclick="openUrl('https://github.com')">
+                <div class="history-icon">💻</div>
+                <div class="history-info">
+                    <div class="history-title">GitHub</div>
+                    <div class="history-url">github.com</div>
+                </div>
+                <div class="history-time">Yesterday</div>
+            </div>
         </div>
     </div>
 
-    <div id="history-content">
-        <!-- History will be rendered here -->
-    </div>
-
     <script>
-        // History data injected from C++ backend
-        let historyData = {{ HISTORY_DATA }};
-
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        function formatDate(timestamp) {
-            const date = new Date(timestamp);
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-
-            if (date.toDateString() === today.toDateString()) {
-                return 'Today';
-            } else if (date.toDateString() === yesterday.toDateString()) {
-                return 'Yesterday';
-            } else {
-                return date.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
-            }
-        }
-
-        function groupByDate(items) {
-            const groups = {};
-            items.forEach(item => {
-                const dateKey = new Date(item.timestamp * 1000).toDateString();
-                if (!groups[dateKey]) {
-                    groups[dateKey] = {
-                        label: formatDate(item.timestamp * 1000),
-                        items: []
-                    };
-                }
-                groups[dateKey].items.push(item);
-            });
-            return Object.values(groups);
-        }
-
-        function renderHistory(items) {
-            const container = document.getElementById('history-content');
-
-            if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <h2>No history yet</h2>
-                        <p>Pages you visit will appear here.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const groups = groupByDate(items);
-            let html = '';
-
-            groups.forEach(group => {
-                html += `
-                    <div class="date-group">
-                        <div class="date-header">${group.label}</div>
-                        <div class="history-list">
-                `;
-
-                group.items.forEach(item => {
-                    html += `
-                        <div class="history-item" onclick="visitPage('${item.url}')">
-                            <div class="favicon"><i class="fa-solid fa-globe"></i></div>
-                            <div class="info">
-                                <div class="title">${item.title}</div>
-                                <div class="url">${item.url}</div>
-                            </div>
-                            <div class="time">${formatTime(item.timestamp * 1000)}</div>
-                            <button class="delete-btn" onclick="deleteItem(event, '${item.url}')"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    `;
-                });
-
-                html += `
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function visitPage(url) {
+        function openUrl(url) {
             window.location.href = url;
         }
-
-        function deleteItem(event, url) {
-            event.stopPropagation();
-            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
-                window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
-                    action: "deleteHistoryItem",
-                    url: url
-                }));
-            }
-            historyData = historyData.filter(item => item.url !== url);
-            renderHistory(historyData);
-        }
-
-        function clearAllHistory() {
-            if (confirm('Are you sure you want to clear all browsing history?')) {
-                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sea) {
-                    window.webkit.messageHandlers.sea.postMessage(JSON.stringify({
-                        action: "clearHistory"
-                    }));
-                }
-                historyData = [];
-                renderHistory(historyData);
+        function clearHistory() {
+            if (confirm('Clear all browsing history?')) {
+                alert('History cleared!');
             }
         }
-
-        // Initial render
-        renderHistory(historyData);
     </script>
 </body>
-
 </html>

@@ -1,0 +1,21 @@
+[Desktop Entry]
+Name=Tsunami
+Comment=A fast, private, and beautiful web browser
+Exec=tsunami %u
+Icon=io.tsunami.Tsunami
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+Keywords=web;browser;internet;privacy;
+StartupNotify=true
+StartupWMClass=tsunami
+Actions=new-window;new-private-window;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=tsunami --new-window
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Exec=tsunami --private-window

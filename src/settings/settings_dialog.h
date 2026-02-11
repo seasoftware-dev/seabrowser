@@ -1,28 +1,50 @@
-/*
- * Sea Browser - Settings Dialog (GTK3)
- * settings_dialog.h
- */
-
 #pragma once
 
-#include <gtk/gtk.h>
-#include <string>
+#include <QDialog>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QSlider>
+#include <QSpinBox>
+#include <QLabel>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
-class SettingsDialog {
+class SettingsDialog : public QDialog {
+    Q_OBJECT
 public:
-    static void show(GtkWindow* parent);
-
-private:
-    static GtkWidget* create_page(const char* title, const char* icon_name);
-    static GtkWidget* create_section(GtkWidget* page, const char* title);
-    static void add_row(GtkWidget* section, GtkWidget* widget, const char* title, const char* subtitle = nullptr);
+    explicit SettingsDialog(QWidget* parent = nullptr);
     
-    // Callbacks
-    static void on_theme_changed(GtkComboBoxText* combo, gpointer user_data);
-    static void on_user_agent_changed(GtkComboBoxText* combo, gpointer user_data);
-    static void on_tracking_protection_toggled(GtkSwitch* sw, gpointer user_data);
+private:
+    void setupUi();
+    void applyTheme();
+    void loadSettings();
+    void saveSettings();
+    void resetSettings();
+    void onSettingsChanged();
+    
+    QComboBox* theme_combo_;
+    QComboBox* accent_combo_;
+    QComboBox* search_engine_;
+    QCheckBox* block_trackers_;
+    QCheckBox* block_ads_;
+    QCheckBox* https_only_;
+    QCheckBox* do_not_track_;
+    QCheckBox* block_third_party_cookies_;
+    QCheckBox* block_fingerprinting_;
+    QCheckBox* disable_webrtc_;
+    QCheckBox* dark_mode_check_;
+    QCheckBox* restore_tabs_;
+    QCheckBox* auto_reload_;
+    QCheckBox* show_bookmarks_bar_;
+    QCheckBox* auto_clear_cache_;
+    QLineEdit* homepage_edit_;
+    QSlider* zoom_level_;
+    QLabel* zoom_label_;
+    QSpinBox* auto_reload_interval_;
+    
+public slots:
+    static void showDialog(QWidget* parent = nullptr);
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami

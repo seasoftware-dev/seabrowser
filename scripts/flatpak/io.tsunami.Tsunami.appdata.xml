@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.tsunami.Tsunami</id>
+  <name>Tsunami</name>
+  <summary>A fast, private, and beautiful web browser</summary>
+  <description>
+    <p>
+      Tsunami is a privacy-focused web browser built with Qt6 WebEngine.
+      It features a clean interface, dark/light themes, and robust privacy protections.
+    </p>
+    <p>
+      Key features:
+    </p>
+    <ul>
+      <li>Privacy-first design with built-in tracker blocking</li>
+      <li>Dark and light themes</li>
+      <li>Customizable accent colors</li>
+      <li>Session restore and tab management</li>
+      <li>Bookmark and history management</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.tsunami.Tsunami.desktop</launchable>
+  <url type="homepage">https://tsunami.io</url>
+  <url type="bugtracker">https://github.com/yourusername/Tsunami/issues</url>
+  <project_license>MIT</project_license>
+  <metadata_license>CC0-1.0</metadata_license>
+  <developer_name>Tsunami Developers</developer_name>
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-cartoon">none</content_attribute>
+    <content_attribute id="violence-realistic">none</content_attribute>
+    <content_attribute id="violence-bloodshed">none</content_attribute>
+    <content_attribute id="violence-sexual">none</content_attribute>
+    <content_attribute id="violence-adult">none</content_attribute>
+    <content_attribute id="drugs-alcohol">none</content_attribute>
+    <content_attribute id="drugs-narcotics">none</content_attribute>
+    <content_attribute id="tobacco">none</content_attribute>
+    <content_attribute id="gambling">none</content_attribute>
+    <content_attribute id="sexual-nudity">none</content_attribute>
+    <content_attribute id="sexual-exploitation">none</content_attribute>
+    <content_attribute id="language-none">none</content_attribute>
+  </content_rating>
+  <releases>
+    <release version="1.0.0" date="2024-02-11">
+      <description>
+        <p>Initial release</p>
+      </description>
+    </release>
+  </releases>
+  <supports>
+    <control>pointing-device</control>
+    <control>keyboard</control>
+  </supports>
+  <categories>
+    <category>Network</category>
+    <category>WebBrowser</category>
+  </categories>
+  <mimetypes>
+    <mimetype>text/html</mimetype>
+    <mimetype>text/xml</mimetype>
+    <mimetype>application/xhtml+xml</mimetype>
+    <mimetype>x-scheme-handler/http</mimetype>
+    <mimetype>x-scheme-handler/https</mimetype>
+  </mimetypes>
+</component>

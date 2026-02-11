@@ -1,0 +1,94 @@
+{
+  "id": "io.tsunami.Tsunami",
+  "runtime": "org.kde.Platform",
+  "runtime-version": "6.7",
+  "sdk": "org.kde.Sdk",
+  "command": "tsunami",
+  "finish-args": [
+    "--share=network",
+    "--share=ipc",
+    "--socket=x11",
+    "--socket=wayland",
+    "--filesystem=xdg-data:rw",
+    "--filesystem=xdg-config:rw",
+    "--filesystem=home:rw",
+    "--filesystem=xdg-download:rw",
+    "--device=dri",
+    "--system-talk-name=org.freedesktop.ScreenSaver"
+  ],
+  "cleanup": [
+    "/lib/debug",
+    "/share/doc",
+    "/share/man",
+    "/include"
+  ],
+  "modules": [
+    {
+      "name": "sqlite",
+      "buildsystem": "simple",
+      "build-commands": [
+        "./configure --prefix=/app --disable-static --enable-shared",
+        "make -j$(nproc)",
+        "make install"
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://sqlite.org/2024/sqlite-autoconf-3450200.tar.gz",
+          "sha256": "b1d90f9941e9dcf004c4b8431bfe03b3f9e4c0035e3d5a2d0406f7a3f9f6d0b"
+        }
+      ]
+    },
+    {
+      "name": "tsunami",
+      "buildsystem": "cmake-ninja",
+      "builddir": true,
+      "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/app",
+        "-DQT_HOST_PATH=/usr"
+      ],
+      "build-commands": [
+        "ninja",
+        "ninja install"
+      ],
+      "post-install": [
+        "mkdir -p /app/share/applications",
+        "mkdir -p /app/share/pixmaps",
+        "cp /app/share/tsunami/data/io.tsunami.Tsunami.desktop /app/share/applications/",
+        "cp /app/share/tsunami/data/io.tsunami.Tsunami.svg /app/share/pixmaps/",
+        "desktop-file-install --dir=/app/share/applications /app/share/applications/io.tsunami.Tsunami.desktop",
+        "update-desktop-database /app/share/applications",
+        "mkdir -p /app/bin",
+        "ln -sf /app/tsunami /app/bin/tsunami"
+      ],
+      "sources": [
+        {
+          "type": "dir",
+          "path": "../..",
+          "skip": [
+            "build",
+            "output",
+            "scripts",
+            ".git"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "appdata",
+      "buildsystem": "simple",
+      "build-commands": [
+        "mkdir -p /app/share/metainfo",
+        "cp io.tsunami.Tsunami.appdata.xml /app/share/metainfo/",
+        "appdata-compose --basedir=/app --verbose"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "path": "io.tsunami.Tsunami.appdata.xml"
+        }
+      ]
+    }
+  ]
+}

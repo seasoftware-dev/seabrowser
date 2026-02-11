@@ -1,27 +1,28 @@
 /*
- * Sea Browser - Privacy-focused web browser
- * application.h - GTK3 Application
+ * Tsunami Browser - Qt6 WebEngine Browser
+ * application.h - Qt6 Application
  */
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <QApplication>
+#include <QString>
 #include <string>
 
-namespace SeaBrowser {
+namespace Tsunami {
 
 class Application {
 public:
     static int run(int argc, char* argv[]);
     
-    static std::string get_config_dir();
-    static std::string get_data_dir();
-    static std::string get_cache_dir();
-    static std::string get_resource_path(const std::string& relative_path);
+    static QString get_config_dir();
+    static QString get_data_dir();
+    static QString get_cache_dir();
+    static QString get_resource_path(const QString& relative_path);
 
 private:
-    static void on_startup(GApplication* app, gpointer user_data);
-    static void on_activate(GtkApplication* app, gpointer user_data);
+    static void on_startup();
+    static void on_activate();
 };
 
-} // namespace SeaBrowser
+} // namespace Tsunami
