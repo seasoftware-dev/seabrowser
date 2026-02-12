@@ -13,6 +13,8 @@
 #include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QScrollArea>
+#include <QFrame>
 
 namespace Tsunami {
 
@@ -20,9 +22,8 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle("Settings - Tsunami");
-    setMinimumSize(900, 550);
-    setMaximumSize(900, 550);
-    resize(900, 550);
+    setMinimumSize(900, 600);
+    resize(900, 600);
     setModal(true);
     
     bool isDark = Settings::instance().getDarkMode();
@@ -34,237 +35,218 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     QString accentColor = "#3b82f6";
     
     QVBoxLayout* main_layout = new QVBoxLayout(this);
-    main_layout->setContentsMargins(16, 16, 16, 16);
-    main_layout->setSpacing(12);
+    main_layout->setContentsMargins(0, 0, 0, 0);
+    main_layout->setSpacing(0);
+    
+    // Scroll area for content
+    QScrollArea* scroll_area = new QScrollArea();
+    scroll_area->setWidgetResizable(true);
+    scroll_area->setFrameShape(QFrame::NoFrame);
+    scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    main_layout->addWidget(scroll_area);
+    
+    // Content widget
+    QWidget* content_widget = new QWidget();
+    content_widget->setStyleSheet(QString("background-color: %1;").arg(bgColor));
+    scroll_area->setWidget(content_widget);
+    
+    QVBoxLayout* content_layout = new QVBoxLayout(content_widget);
+    content_layout->setContentsMargins(24, 24, 24, 24);
+    content_layout->setSpacing(20);
     
     // Title
     QLabel* title = new QLabel("Settings");
-    title->setStyleSheet(QString("font-size: 20px; font-weight: bold; color: %1;").arg(accentColor));
-    main_layout->addWidget(title);
+    title->setStyleSheet(QString("font-size: 24px; font-weight: bold; color: %1;").arg(accentColor));
+    content_layout->addWidget(title);
     
     // Theme
-    QHBoxLayout* theme_row = new QHBoxLayout();
-    theme_row->addWidget(new QLabel("Theme:"));
+    QLabel* theme_label = new QLabel("Theme:");
+    theme_label->setStyleSheet(QString("color: %1;").arg(textColor));
     theme_combo_ = new QComboBox();
     theme_combo_->addItem("Dark", "dark");
     theme_combo_->addItem("Light", "light");
     theme_combo_->addItem("System", "system");
+    theme_combo_->setStyleSheet(QString("padding: 8px 12px; border: 1px solid %1; border-radius: 6px; background: %2; color: %3; min-width: 150px;").arg(borderColor, inputBg, textColor));
+    
+    QHBoxLayout* theme_row = new QHBoxLayout();
+    theme_row->addWidget(theme_label);
     theme_row->addWidget(theme_combo_);
     theme_row->addStretch();
-    main_layout->addLayout(theme_row);
+    content_layout->addLayout(theme_row);
     
-    // Privacy Checkboxes
-    QLabel* privacy_label = new QLabel("Privacy:");
-    privacy_label->setStyleSheet(QString("font-weight: bold; color: %1;").arg(accentColor));
-    main_layout->addWidget(privacy_label);
+    // Privacy Section
+    QLabel* privacy_header = new QLabel("Privacy & Security");
+    privacy_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1; margin-top: 16px;").arg(accentColor));
+    content_layout->addWidget(privacy_header);
+    
+    QGridLayout* privacy_grid = new QGridLayout();
+    privacy_grid->setColumnStretch(0, 1);
+    privacy_grid->setColumnStretch(1, 1);
+    privacy_grid->setHorizontalSpacing(16);
+    privacy_grid->setVerticalSpacing(8);
+    
+    QString checkbox_style = QString("QCheckBox { color: %1; spacing: 8px; } QCheckBox::indicator { width: 18px; height: 18px; border-radius: 4px; border: 1px solid %2; background: %3; } QCheckBox::indicator:checked { background: %4; border-color: %4; }").arg(textColor, borderColor, inputBg, accentColor);
     
     block_trackers_ = new QCheckBox("Block Trackers");
     block_trackers_->setChecked(true);
-    main_layout->addWidget(block_trackers_);
+    block_trackers_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(block_trackers_, 0, 0);
     
     block_ads_ = new QCheckBox("Block Ads");
     block_ads_->setChecked(true);
-    main_layout->addWidget(block_ads_);
+    block_ads_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(block_ads_, 0, 1);
     
     https_only_ = new QCheckBox("HTTPS Only");
-    main_layout->addWidget(https_only_);
+    https_only_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(https_only_, 1, 0);
     
     do_not_track_ = new QCheckBox("Do Not Track");
     do_not_track_->setChecked(true);
-    main_layout->addWidget(do_not_track_);
+    do_not_track_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(do_not_track_, 1, 1);
     
     block_third_party_cookies_ = new QCheckBox("Block Third-Party Cookies");
     block_third_party_cookies_->setChecked(true);
-    main_layout->addWidget(block_third_party_cookies_);
+    block_third_party_cookies_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(block_third_party_cookies_, 2, 0);
     
     block_fingerprinting_ = new QCheckBox("Block Fingerprinting");
     block_fingerprinting_->setChecked(true);
-    main_layout->addWidget(block_fingerprinting_);
+    block_fingerprinting_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(block_fingerprinting_, 2, 1);
     
     disable_webrtc_ = new QCheckBox("Disable WebRTC");
-    main_layout->addWidget(disable_webrtc_);
+    disable_webrtc_->setStyleSheet(checkbox_style);
+    privacy_grid->addWidget(disable_webrtc_, 3, 0);
     
-    // Search Engine
-    QLabel* search_label = new QLabel("Search Engine:");
-    search_label->setStyleSheet(QString("font-weight: bold; color: %1;").arg(accentColor));
-    main_layout->addWidget(search_label);
+    content_layout->addLayout(privacy_grid);
+    
+    // Search Engine Section
+    QLabel* search_header = new QLabel("Search Engine");
+    search_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1; margin-top: 16px;").arg(accentColor));
+    content_layout->addWidget(search_header);
+    
+    QString radio_style = QString("QRadioButton { color: %1; spacing: 8px; } QRadioButton::indicator { width: 18px; height: 18px; border-radius: 9px; border: 1px solid %2; background: %3; } QRadioButton::indicator:checked { background: %4; border-color: %4; }").arg(textColor, borderColor, inputBg, accentColor);
     
     search_group_ = new QButtonGroup(this);
     
     QRadioButton* duckduckgo_radio = new QRadioButton("DuckDuckGo");
+    duckduckgo_radio->setStyleSheet(radio_style);
     search_group_->addButton(duckduckgo_radio, 0);
-    main_layout->addWidget(duckduckgo_radio);
+    content_layout->addWidget(duckduckgo_radio);
     
     QRadioButton* brave_radio = new QRadioButton("Brave Search");
+    brave_radio->setStyleSheet(radio_style);
     search_group_->addButton(brave_radio, 1);
-    main_layout->addWidget(brave_radio);
+    content_layout->addWidget(brave_radio);
     
     QRadioButton* google_radio = new QRadioButton("Google");
+    google_radio->setStyleSheet(radio_style);
     search_group_->addButton(google_radio, 2);
-    main_layout->addWidget(google_radio);
+    content_layout->addWidget(google_radio);
     
-    // Startup
-    QLabel* startup_label = new QLabel("Startup:");
-    startup_label->setStyleSheet(QString("font-weight: bold; color: %1;").arg(accentColor));
-    main_layout->addWidget(startup_label);
+    // Startup Section
+    QLabel* startup_header = new QLabel("Startup");
+    startup_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1; margin-top: 16px;").arg(accentColor));
+    content_layout->addWidget(startup_header);
     
     QHBoxLayout* homepage_row = new QHBoxLayout();
-    homepage_row->addWidget(new QLabel("Homepage:"));
+    QLabel* homepage_label = new QLabel("Homepage:");
+    homepage_label->setStyleSheet(QString("color: %1; min-width: 80px;").arg(textColor));
+    homepage_row->addWidget(homepage_label);
     homepage_edit_ = new QLineEdit();
     homepage_edit_->setPlaceholderText("about:blank");
+    homepage_edit_->setStyleSheet(QString("padding: 8px 12px; border: 1px solid %1; border-radius: 6px; background: %2; color: %3;").arg(borderColor, inputBg, textColor));
+    homepage_edit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     homepage_row->addWidget(homepage_edit_);
-    main_layout->addLayout(homepage_row);
+    content_layout->addLayout(homepage_row);
     
     restore_tabs_ = new QCheckBox("Restore tabs from last session");
     restore_tabs_->setChecked(true);
-    main_layout->addWidget(restore_tabs_);
+    restore_tabs_->setStyleSheet(checkbox_style);
+    content_layout->addWidget(restore_tabs_);
     
     auto_reload_ = new QCheckBox("Auto-reload pages");
-    main_layout->addWidget(auto_reload_);
+    auto_reload_->setStyleSheet(checkbox_style);
+    content_layout->addWidget(auto_reload_);
     
     QHBoxLayout* reload_row = new QHBoxLayout();
-    reload_row->addWidget(new QLabel("Interval:"));
+    QLabel* reload_label = new QLabel("Interval:");
+    reload_label->setStyleSheet(QString("color: %1; min-width: 80px;").arg(textColor));
+    reload_row->addWidget(reload_label);
     auto_reload_interval_ = new QSpinBox();
     auto_reload_interval_->setRange(5, 3600);
     auto_reload_interval_->setValue(30);
     auto_reload_interval_->setEnabled(false);
+    auto_reload_interval_->setStyleSheet(QString("padding: 8px 12px; border: 1px solid %1; border-radius: 6px; background: %2; color: %3;").arg(borderColor, inputBg, textColor));
     reload_row->addWidget(auto_reload_interval_);
     reload_row->addStretch();
-    main_layout->addLayout(reload_row);
+    content_layout->addLayout(reload_row);
     
     connect(auto_reload_, &QCheckBox::toggled, auto_reload_interval_, &QSpinBox::setEnabled);
     
-    // Advanced
-    QLabel* advanced_label = new QLabel("Advanced:");
-    advanced_label->setStyleSheet(QString("font-weight: bold; color: %1;").arg(accentColor));
-    main_layout->addWidget(advanced_label);
+    // Advanced Section
+    QLabel* advanced_header = new QLabel("Advanced");
+    advanced_header->setStyleSheet(QString("font-size: 16px; font-weight: bold; color: %1; margin-top: 16px;").arg(accentColor));
+    content_layout->addWidget(advanced_header);
     
     QHBoxLayout* zoom_row = new QHBoxLayout();
-    zoom_row->addWidget(new QLabel("Zoom:"));
+    QLabel* zoom_label = new QLabel("Zoom:");
+    zoom_label->setStyleSheet(QString("color: %1; min-width: 80px;").arg(textColor));
+    zoom_row->addWidget(zoom_label);
     zoom_level_ = new QSlider(Qt::Horizontal);
     zoom_level_->setRange(25, 200);
     zoom_level_->setValue(100);
+    zoom_level_->setStyleSheet(QString("QSlider::groove:horizontal { height: 6px; background: %1; border-radius: 3px; } QSlider::handle:horizontal { background: %2; width: 18px; margin: -6px 0; border-radius: 4px; }").arg(borderColor, accentColor));
+    zoom_level_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     zoom_row->addWidget(zoom_level_);
     zoom_label_ = new QLabel("100%");
+    zoom_label_->setStyleSheet(QString("color: %1; min-width: 50px;").arg(textColor));
     zoom_row->addWidget(zoom_label_);
-    zoom_row->addStretch();
-    main_layout->addLayout(zoom_row);
+    content_layout->addLayout(zoom_row);
     
     connect(zoom_level_, &QSlider::valueChanged, this, [this](int value) {
         zoom_label_->setText(QString::number(value) + "%");
     });
     
     show_bookmarks_bar_ = new QCheckBox("Show bookmarks bar");
-    main_layout->addWidget(show_bookmarks_bar_);
+    show_bookmarks_bar_->setStyleSheet(checkbox_style);
+    content_layout->addWidget(show_bookmarks_bar_);
     
     auto_clear_cache_ = new QCheckBox("Auto-clear cache on exit");
-    main_layout->addWidget(auto_clear_cache_);
+    auto_clear_cache_->setStyleSheet(checkbox_style);
+    content_layout->addWidget(auto_clear_cache_);
     
-    main_layout->addStretch();
+    content_layout->addStretch();
     
-    // Buttons
-    QHBoxLayout* button_row = new QHBoxLayout();
-    button_row->setContentsMargins(0, 8, 0, 0);
+    // Button Row
+    QWidget* button_container = new QWidget();
+    button_container->setStyleSheet(QString("background-color: %1; border-top: 1px solid %2;").arg(bgColor, borderColor));
+    QHBoxLayout* button_layout = new QHBoxLayout(button_container);
+    button_layout->setContentsMargins(24, 16, 24, 16);
+    button_layout->setSpacing(12);
     
     QPushButton* reset_btn = new QPushButton("Reset");
+    reset_btn->setStyleSheet(QString("padding: 10px 24px; border: 1px solid %1; border-radius: 6px; background: %2; color: %3;").arg(borderColor, inputBg, textColor));
     connect(reset_btn, &QPushButton::clicked, this, &SettingsDialog::resetSettings);
-    button_row->addWidget(reset_btn);
+    button_layout->addWidget(reset_btn);
     
-    button_row->addStretch();
+    button_layout->addStretch();
     
     QPushButton* cancel_btn = new QPushButton("Cancel");
+    cancel_btn->setStyleSheet(QString("padding: 10px 24px; border: 1px solid %1; border-radius: 6px; background: %2; color: %3;").arg(borderColor, inputBg, textColor));
     connect(cancel_btn, &QPushButton::clicked, this, &QDialog::reject);
-    button_row->addWidget(cancel_btn);
+    button_layout->addWidget(cancel_btn);
     
     QPushButton* save_btn = new QPushButton("Save");
-    save_btn->setStyleSheet(QString("background: %1; color: white; padding: 8px 24px; border: none; border-radius: 6px;").arg(accentColor));
+    save_btn->setStyleSheet(QString("padding: 10px 24px; background: %1; color: white; border: none; border-radius: 6px;").arg(accentColor));
     connect(save_btn, &QPushButton::clicked, this, &SettingsDialog::saveSettings);
     connect(save_btn, &QPushButton::clicked, this, &QDialog::accept);
-    button_row->addWidget(save_btn);
+    button_layout->addWidget(save_btn);
     
-    main_layout->addLayout(button_row);
-    
-    // Apply theme stylesheet
-    setStyleSheet(QString(R"(
-        QDialog {
-            background-color: %1;
-        }
-        QLabel {
-            color: %2;
-        }
-        QComboBox {
-            padding: 6px 12px;
-            border: 1px solid %3;
-            border-radius: 6px;
-            background: %4;
-            color: %2;
-        }
-        QCheckBox {
-            spacing: 8px;
-            color: %2;
-        }
-        QCheckBox::indicator {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            border: 1px solid %3;
-            background: %4;
-        }
-        QCheckBox::indicator:checked {
-            background: %5;
-            border-color: %5;
-        }
-        QRadioButton {
-            spacing: 8px;
-            color: %2;
-        }
-        QRadioButton::indicator {
-            width: 16px;
-            height: 16px;
-            border-radius: 8px;
-            border: 1px solid %3;
-            background: %4;
-        }
-        QRadioButton::indicator:checked {
-            background: %5;
-            border-color: %5;
-        }
-        QLineEdit {
-            padding: 6px 12px;
-            border: 1px solid %3;
-            border-radius: 6px;
-            background: %4;
-            color: %2;
-        }
-        QSlider::groove:horizontal {
-            height: 6px;
-            background: %3;
-            border-radius: 3px;
-        }
-        QSlider::handle:horizontal {
-            background: %5;
-            width: 16px;
-            margin: -5px 0;
-            border-radius: 4px;
-        }
-        QSpinBox {
-            padding: 6px 12px;
-            border: 1px solid %3;
-            border-radius: 6px;
-            background: %4;
-            color: %2;
-        }
-        QPushButton {
-            padding: 8px 20px;
-            border: 1px solid %3;
-            border-radius: 6px;
-            background: %4;
-            color: %2;
-        }
-        QPushButton:hover {
-            background: %3;
-        }
-    )").arg(bgColor, textColor, borderColor, inputBg, accentColor));
+    main_layout->addWidget(button_container);
     
     loadSettings();
 }
