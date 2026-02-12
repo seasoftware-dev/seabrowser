@@ -423,11 +423,11 @@
         }
 
         function finishSetup() {
-            if (window.tunami && window.tunami.setSetting) {
-                window.tunami.setSetting('darkMode', selectedSettings.darkMode);
-                window.tunami.setSetting('accentColor', selectedSettings.accentColor);
-                window.tunami.setSetting('searchEngine', selectedSettings.searchEngine);
-                window.tunami.setSetting('firstRun', false);
+            if (window.tsunami && window.tsunami.setSetting) {
+                window.tsunami.setSetting('darkMode', selectedSettings.darkMode);
+                window.tsunami.setSetting('accentColor', selectedSettings.accentColor);
+                window.tsunami.setSetting('searchEngine', selectedSettings.searchEngine);
+                window.tsunami.setSetting('firstRun', false);
             }
 
             setTimeout(() => {

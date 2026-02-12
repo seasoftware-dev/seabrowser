@@ -133,6 +133,7 @@ void BrowserWindow::setupUi() {
     main_layout->addWidget(progress_bar_);
 
     // Connect to settings changes for instant updates
+    qDebug() << "Connecting settingsChanged signal..." << Qt::endl;
     connect(&Settings::instance(), &Settings::settingsChanged, this, &BrowserWindow::onSettingsChanged);
 
     // Don't create tab here - restoreSession will handle it
@@ -290,12 +291,11 @@ void BrowserWindow::setupTitleBar() {
 }
 
 void BrowserWindow::applyTheme() {
-    QString accentColor = Settings::instance().getAccentColor();
-    if (accentColor.isEmpty()) accentColor = "#3b82f6";
+    QString accentColor = "#3b82f6"; // Fixed blue accent color
     
     bool isDark = Settings::instance().getDarkMode();
     
-    QString bgColor = isDark ? "#030712" : "#f8fafc";
+    QString bgColor = isDark ? "#030712" : "#b8e0ff"; // Changed from #f8fafc to #ffffff
     QString titleBg = isDark ? "#0f172a" : "#ffffff";
     QString inputBg = isDark ? "#1e293b" : "#f1f5f9";
     QString borderColor = isDark ? "#334155" : "#e2e8f0";
@@ -425,8 +425,12 @@ void BrowserWindow::refreshIcons() {
 }
 
 void BrowserWindow::onSettingsChanged() {
+    qDebug() << "Settings changed - applying theme..." << Qt::endl;
+    qDebug() << "Current dark mode:" << Settings::instance().getDarkMode();
+    qDebug() << "Current accent color:" << Settings::instance().getAccentColor();
     applyTheme();
     refreshIcons();
+    qDebug() << "Theme applied successfully" << Qt::endl;
 }
 
 void BrowserWindow::showOnboarding() {
@@ -582,27 +586,39 @@ void BrowserWindow::onReload() {
 
 void BrowserWindow::onMenu() {
     QMenu* menu = new QMenu(this);
-    menu->setStyleSheet(R"(
+    
+    bool isDark = Settings::instance().getDarkMode();
+    QString accentColor = "#3b82f6"; // Fixed blue accent color
+    
+    QString bgColor = isDark ? "#0f172a" : "#ffffff";
+    QString textColor = isDark ? "#e2e8f0" : "#1e293b";
+    QString borderColor = isDark ? "#1e293b" : "#e2e8f0";
+    QString selectedBg = isDark ? "#1e293b" : "#f1f5f9";
+    
+    menu->setStyleSheet(QString(R"(
         QMenu {
-            background-color: #0f172a;
-            border: 1px solid #1e293b;
+            background-color: %1;
+            border: 1px solid %2;
             border-radius: 8px;
             padding: 8px;
         }
         QMenu::item {
-            color: #e2e8f0;
+            color: %3;
             padding: 8px 24px;
             border-radius: 4px;
         }
         QMenu::item:selected {
-            background-color: #1e293b;
+            background-color: %4;
+        }
+        QMenu::item:selected {
+            background-color: %5;
         }
         QMenu::separator {
-            background-color: #1e293b;
+            background-color: %2;
             height: 1px;
             margin: 6px 0px;
         }
-    )");
+    )").arg(bgColor, borderColor, textColor, selectedBg, accentColor));
     
     menu->addAction("New Tab", this, &BrowserWindow::onNewTab);
     menu->addAction("Open File...", this, &BrowserWindow::onOpenFile);

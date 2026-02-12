@@ -12,19 +12,26 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QCoreApplication>
 
 namespace Tsunami {
 
+// Bridge object to expose settings to JavaScript
 class SettingsBridge : public QObject {
     Q_OBJECT
 public:
-    Q_INVOKABLE QVariant getSetting(const QString& key) {
+    explicit SettingsBridge(QObject* parent = nullptr) : QObject(parent) {
+        connect(&Settings::instance(), &Settings::settingsChanged, this, &SettingsBridge::onSettingsChanged);
+    }
+
+    Q_INVOKABLE QJsonObject getSettings() {
         auto& settings = Settings::instance();
-        if (key == "darkMode") return settings.getDarkMode();
-        if (key == "accentColor") return settings.getAccentColor();
-        if (key == "searchEngine") return settings.getSearchEngine();
-        if (key == "theme") return settings.getTheme();
-        return QVariant();
+        QJsonObject obj;
+        obj["darkMode"] = settings.getDarkMode();
+        obj["accentColor"] = settings.getAccentColor();
+        obj["searchEngine"] = settings.getSearchEngine();
+        obj["theme"] = settings.getTheme();
+        return obj;
     }
     
     Q_INVOKABLE void setSetting(const QString& key, const QVariant& value) {
@@ -35,15 +42,13 @@ public:
         else if (key == "theme") settings.setTheme(value.toString());
         else if (key == "firstRun") settings.setFirstRun(!value.toBool());
     }
-    
-    Q_INVOKABLE QVariant getAllSettings() {
-        auto& settings = Settings::instance();
-        QJsonObject obj;
-        obj["darkMode"] = settings.getDarkMode();
-        obj["accentColor"] = settings.getAccentColor();
-        obj["searchEngine"] = settings.getSearchEngine();
-        obj["theme"] = settings.getTheme();
-        return QVariant(obj);
+
+signals:
+    void settingsChanged(QJsonObject settings);
+
+private slots:
+    void onSettingsChanged() {
+        emit settingsChanged(getSettings());
     }
 };
 
@@ -66,48 +71,80 @@ void WebView::setupPage(QWebEnginePage* page) {
 
     profile->setHttpAcceptLanguage("en-US,en;q=0.9");
     
-    // Add Qt bridge for JavaScript
-    static SettingsBridge* bridge = new SettingsBridge();
+    // Create the bridge object properly parenting it to the page to avoid leaks/crashes
+    // But QWebChannel needs a QObject that outlives the page load or is registered properly.
+    // Ideally, we register it on the profile if shared, or page if unique.
+    // For simplicity, we'll create a new channel per page.
+    
     QWebChannel* channel = new QWebChannel(page);
-    channel->registerObject("tunami", bridge);
+    SettingsBridge* bridge = new SettingsBridge(channel); // Parent to channel
+    channel->registerObject("tsunami", bridge); // Use 'tsunami' to match JS
     page->setWebChannel(channel);
     
-    // Inject JavaScript bridge
-    QString jsBridge = R"(
-        (function() {
-            if (window.tunami) return;
-            window.tunami = {
-                getSettings: function() {
-                    if (window.tunami._settings) return window.tunami._settings;
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', 'qt://channel', false);
-                    xhr.send();
-                    try {
-                        window.tunami._settings = JSON.parse(xhr.responseText);
-                    } catch(e) {
-                        window.tunami._settings = {};
-                    }
-                    return window.tunami._settings;
-                },
-                getSetting: function(key) {
-                    if (window.tunami._settings && window.tunami._settings.hasOwnProperty(key)) {
-                        return window.tunami._settings[key];
-                    }
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', 'qt://getSetting/' + key, false);
-                    xhr.send();
-                    return xhr.responseText;
-                },
-                setSetting: function(key, value) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', 'qt://setSetting/' + key + '/' + encodeURIComponent(String(value)), false);
-                    xhr.send();
-                }
-            };
-        })();
-    )";
+    // Inject qwebchannel.js
+    QFile webChannelFile(QCoreApplication::applicationDirPath() + "/qtwebchannel/qwebchannel.js");
+    // Backup location
+    if (!webChannelFile.exists()) {
+        webChannelFile.setFileName(":/qtwebchannel/qwebchannel.js"); 
+    }
     
-    page->runJavaScript(jsBridge);
+    QString webChannelJs;
+    if (webChannelFile.open(QIODevice::ReadOnly)) {
+        webChannelJs = QString::fromUtf8(webChannelFile.readAll());
+        webChannelFile.close();
+    } else {
+        // Fallback: Embed a minimal version or assume it's loaded from resource
+        // Qt 6 usually provides this via qrc if the module is included.
+        webChannelJs = "/* qwebchannel.js not found, assuming external load */"; 
+    }
+
+    QWebEngineScript script;
+    
+    // Get current settings as JSON
+    Tsunami::Settings& appSettings = Tsunami::Settings::instance();
+    QJsonObject settingsObj;
+    settingsObj["darkMode"] = appSettings.getDarkMode();
+    settingsObj["accentColor"] = appSettings.getAccentColor();
+    settingsObj["searchEngine"] = appSettings.getSearchEngine();
+    settingsObj["theme"] = appSettings.getTheme();
+    QJsonDocument settingsDoc(settingsObj);
+    QString settingsJson = QString::fromUtf8(settingsDoc.toJson(QJsonDocument::Compact));
+    
+    script.setSourceCode(webChannelJs + QString(R"(
+        (function() {
+            // Inject settings directly
+            window.tsunamiSettings = %1;
+            console.log('Injected settings:', window.tsunamiSettings);
+            
+            new QWebChannel(qt.webChannelTransport, function(channel) {
+                window.tsunami = channel.objects.tsunami;
+                console.log('Tsunami bridge connected');
+                
+                // Notify that bridge is ready
+                if (window.onTsunamiReady) window.onTsunamiReady();
+                
+                // Initial setting application if the function exists
+                if (window.tsunami && window.applySettings) {
+                    console.log('Applying settings from bridge');
+                    window.applySettings(window.tsunami.getSettings());
+                }
+                
+                // Listen for settings changes using callback approach
+                if (window.tsunami && window.tsunami.settingsChanged && window.applySettings) {
+                    window.tsunami.settingsChanged.connect(function(settings) {
+                        console.log('Settings changed:', JSON.stringify(settings));
+                        window.applySettings(settings);
+                    });
+                }
+            });
+        })();
+    )").arg(settingsJson));
+    script.setName("tsunami_bridge");
+    script.setWorldId(QWebEngineScript::MainWorld);
+    script.setInjectionPoint(QWebEngineScript::DocumentReady);
+    script.setRunsOnSubFrames(false);
+    
+    page->scripts().insert(script);
 }
 
 } // namespace Tsunami

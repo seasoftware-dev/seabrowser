@@ -41,8 +41,8 @@ public:
     void setTheme(const QString& theme) { theme_ = theme; save(); emit settingsChanged(); }
     void setDarkMode(bool dark) { dark_mode_ = dark; save(); emit settingsChanged(); }
     void setAccentColor(const QString& color) { accent_color_ = color; save(); emit settingsChanged(); }
-    void setSearchEngine(const QString& engine) { search_engine_ = engine; save(); }
-    void setHomepage(const QString& homepage) { homepage_ = homepage; save(); }
+    void setSearchEngine(const QString& engine) { search_engine_ = engine; save(); emit settingsChanged(); }
+    void setHomepage(const QString& homepage) { homepage_ = homepage; save(); emit settingsChanged(); }
     void setRestoreTabs(bool restore) { restore_tabs_ = restore; save(); }
     void setBlockTrackers(bool block) { block_trackers_ = block; save(); emit settingsChanged(); }
     void setBlockAds(bool block) { block_ads_ = block; save(); emit settingsChanged(); }
@@ -53,10 +53,10 @@ public:
     void setBlockFingerprinting(bool block) { block_fingerprinting_ = block; save(); emit settingsChanged(); }
     void setDisableWebRTC(bool disable) { disable_webrtc_ = disable; save(); emit settingsChanged(); }
     void setAutoClearCache(bool clear) { auto_clear_cache_ = clear; save(); }
-    void setZoomLevel(int zoom) { zoom_level_ = zoom; save(); }
-    void setShowBookmarksBar(bool show) { show_bookmarks_bar_ = show; save(); }
-    void setAutoReload(bool reload) { auto_reload_ = reload; save(); }
-    void setAutoReloadInterval(int interval) { auto_reload_interval_ = interval; save(); }
+    void setZoomLevel(int zoom) { zoom_level_ = zoom; save(); emit settingsChanged(); }
+    void setShowBookmarksBar(bool show) { show_bookmarks_bar_ = show; save(); emit settingsChanged(); }
+    void setAutoReload(bool reload) { auto_reload_ = reload; save(); emit settingsChanged(); }
+    void setAutoReloadInterval(int interval) { auto_reload_interval_ = interval; save(); emit settingsChanged(); }
 
 signals:
     void settingsChanged();

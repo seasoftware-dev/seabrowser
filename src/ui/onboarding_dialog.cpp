@@ -9,6 +9,9 @@
 #include <QPushButton>
 #include <QCloseEvent>
 #include <QDebug>
+#include <QApplication>
+#include <QScreen>
+#include <QPropertyAnimation>
 
 namespace Tsunami {
 
@@ -17,279 +20,267 @@ OnboardingDialog::OnboardingDialog(QWidget* parent)
     , current_step_(0)
 {
     setWindowTitle("Welcome to Tsunami");
-    setMinimumSize(500, 400);
-    resize(550, 420);
+    setMinimumSize(600, 500); 
+    resize(600, 500);
     setModal(true);
-    setWindowFlags(windowFlags() & ~Qt::WindowCloseButtonHint);
-
+    
+    // Remove standard window decorations and add custom ones
+    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+    
     applyTheme();
     setupUi();
+    
+    // Connect settings changes to theme updates
     connect(&Settings::instance(), &Settings::settingsChanged, this, &OnboardingDialog::applyTheme);
 }
 
-void OnboardingDialog::applyTheme() {
-    QString accentColor = Settings::instance().getAccentColor();
-    if (accentColor.isEmpty()) accentColor = "#60a5fa";
-
-    bool isDark = Settings::instance().getDarkMode();
-
-    QString bgColor = isDark ? "#030712" : "#f0f9ff";
-    QString titleColor = isDark ? "#f8fafc" : "#1e40af";
-    QString subtitleColor = isDark ? "#94a3b8" : "#64748b";
-    QString cardBg = isDark ? "#0f172a" : "#ffffff";
-    QString borderColor = isDark ? "#1e293b" : "#bfdbfe";
-    QString textColor = isDark ? "#f8fafc" : "#1e293b";
-    QString optionBg = isDark ? "#1e293b" : "#eff6ff";
-    QString optionHover = isDark ? "#334155" : "#dbeafe";
-
-    setStyleSheet(QString(R"(
-        QDialog {
-            background-color: %1;
-        }
-    )").arg(bgColor));
-
-    if (title_) {
-        title_->setStyleSheet(QString("font-size: 22px; font-weight: bold; color: %1;").arg(titleColor));
-    }
-    if (subtitle_) {
-        subtitle_->setStyleSheet(QString("font-size: 13px; color: %1; margin-bottom: 16px;").arg(subtitleColor));
-    }
-
-    if (back_btn_) {
-        back_btn_->setStyleSheet(QString(R"(
-            QPushButton {
-                background: %1;
-                color: %2;
-                border: 1px solid %3;
-                border-radius: 8px;
-                padding: 10px 20px;
-            }
-            QPushButton:hover:not(:disabled) {
-                background: %4;
-            }
-            QPushButton:disabled {
-                opacity: 0.5;
-            }
-        )").arg(cardBg, subtitleColor, borderColor, optionBg));
-    }
-
-    if (next_btn_) {
-        next_btn_->setStyleSheet(QString(R"(
-            QPushButton {
-                background: %1;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 10px 24px;
-                font-weight: 600;
-            }
-            QPushButton:hover {
-                opacity: 0.9;
-            }
-        )").arg(accentColor));
-    }
-
-    updateOptionButtons();
-}
-
-void OnboardingDialog::updateOptionButtons() {
-    QString accentColor = Settings::instance().getAccentColor();
-    if (accentColor.isEmpty()) accentColor = "#60a5fa";
-
-    bool isDark = Settings::instance().getDarkMode();
-
-    QString cardBg = isDark ? "#1e293b" : "#ffffff";
-    QString borderColor = isDark ? "#334155" : "#bfdbfe";
-    QString textColor = isDark ? "#f8fafc" : "#1e293b";
-    QString optionBg = isDark ? "#0f172a" : "#eff6ff";
-    QString optionHover = isDark ? "#1e293b" : "#dbeafe";
-    QString selectedBg = isDark ? QString("rgba(96, 165, 250, 0.2)") : "#bfdbfe";
-
-    QStringList steps = {"theme_step", "color_step", "search_step"};
-    for (const QString& stepName : steps) {
-        QLayout* layout = nullptr;
-        if (stepName == "theme_step") {
-            layout = theme_layout_;
-        } else if (stepName == "color_step") {
-            layout = color_layout_;
-        } else if (stepName == "search_step") {
-            layout = search_layout_;
-        }
-
-        if (layout) {
-            for (int i = 0; i < layout->count(); ++i) {
-                QWidget* widget = layout->itemAt(i)->widget();
-                if (widget && widget->inherits("QAbstractButton")) {
-                    QRadioButton* btn = qobject_cast<QRadioButton*>(widget);
-                    if (btn) {
-                        bool isChecked = btn->isChecked();
-                        btn->setStyleSheet(QString(R"(
-                            QRadioButton {
-                                background: %1;
-                                color: %2;
-                                border: 1px solid %3;
-                                border-radius: 8px;
-                                padding: 12px 16px;
-                                spacing: 10px;
-                            }
-                            QRadioButton:hover {
-                                background: %4;
-                            }
-                            QRadioButton::indicator {
-                                width: 18px;
-                                height: 18px;
-                                border-radius: 9px;
-                                border: 2px solid %3;
-                            }
-                            QRadioButton::indicator:checked {
-                                background: %5;
-                                border: 2px solid %5;
-                            }
-                        )").arg(isChecked ? selectedBg : optionBg, textColor, borderColor,
-                                isDark ? optionBg : optionHover, accentColor));
-                    }
-                }
-            }
-        }
-    }
-}
-
 void OnboardingDialog::setupUi() {
-    QVBoxLayout* main_layout = new QVBoxLayout(this);
-    main_layout->setContentsMargins(32, 28, 32, 20);
-    main_layout->setSpacing(0);
-
+    // Create custom title bar
+    QWidget* title_bar = new QWidget(this);
+    title_bar->setObjectName("titleBar");
+    title_bar->setFixedHeight(32);
+    title_bar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    
+    QHBoxLayout* title_layout = new QHBoxLayout(title_bar);
+    title_layout->setContentsMargins(8, 0, 8, 0);
+    title_layout->setSpacing(4);
+    
+    // Window title
     title_ = new QLabel("Welcome to Tsunami");
-    title_->setStyleSheet("font-size: 22px; font-weight: bold; color: #f8fafc;");
-    main_layout->addWidget(title_);
-
-    subtitle_ = new QLabel("Let's customize your browsing experience");
-    subtitle_->setStyleSheet("font-size: 13px; color: #94a3b8; margin-bottom: 16px;");
-    main_layout->addWidget(subtitle_);
-
-    stacked_widget_ = new QStackedWidget();
-    stacked_widget_->setObjectName("onboardingStack");
-    stacked_widget_->setStyleSheet(R"(
-        QStackedWidget {
+    // Initial style, will be updated by applyTheme
+    title_->setStyleSheet("font-size: 12px; font-weight: 500; margin-left: 8px;");
+    title_layout->addWidget(title_);
+    title_layout->addStretch();
+    
+    // Window control buttons - Right side
+    QWidget* controls_container = new QWidget(title_bar);
+    QHBoxLayout* controls_layout = new QHBoxLayout(controls_container);
+    controls_layout->setContentsMargins(0, 0, 0, 0);
+    controls_layout->setSpacing(0);
+    
+    // Minimize button
+    min_btn_ = new QPushButton(controls_container);
+    min_btn_->setFixedSize(24, 24);
+    min_btn_->setToolTip("Minimize");
+    min_btn_->setStyleSheet(R"(
+        QPushButton {
             background: transparent;
             border: none;
+            padding: 4px;
+            margin: 0 1px;
+        }
+        QPushButton:hover {
+            background: rgba(128, 128, 128, 0.2);
         }
     )");
-
-    theme_layout_ = new QVBoxLayout();
-    theme_layout_->setSpacing(10);
-
-    QLabel* theme_label = new QLabel("Choose your theme");
-    theme_label->setStyleSheet("font-size: 15px; font-weight: 600; color: #f8fafc;");
-    theme_layout_->addWidget(theme_label);
-
-    theme_group_ = new QButtonGroup(this);
-
-    QRadioButton* dark_btn = new QRadioButton("Dark Mode");
-    dark_btn->setProperty("theme", "dark");
-    dark_btn->setChecked(true);
-    theme_layout_->addWidget(dark_btn);
-    theme_group_->addButton(dark_btn);
-
-    QRadioButton* light_btn = new QRadioButton("Light Mode");
-    light_btn->setProperty("theme", "light");
-    theme_layout_->addWidget(light_btn);
-    theme_group_->addButton(light_btn);
-
-    QWidget* theme_widget = new QWidget();
-    theme_widget->setLayout(theme_layout_);
-    stacked_widget_->addWidget(theme_widget);
-
-    color_layout_ = new QVBoxLayout();
-    color_layout_->setSpacing(10);
-
-    QLabel* color_label = new QLabel("Pick an accent color");
-    color_label->setStyleSheet("font-size: 15px; font-weight: 600; color: #f8fafc;");
-    color_layout_->addWidget(color_label);
-
-    color_group_ = new QButtonGroup(this);
-
-    QStringList colors = {
-        "#60a5fa|Blue",
-        "#a78bfa|Purple",
-        "#34d399|Green",
-        "#f472b6|Pink",
-        "#fbbf24|Orange",
-        "#f87171|Red"
-    };
-
-    QHBoxLayout* color_row1 = new QHBoxLayout();
-    QHBoxLayout* color_row2 = new QHBoxLayout();
-
-    for (int i = 0; i < colors.size(); ++i) {
-        QStringList parts = colors[i].split("|");
-        QRadioButton* color_btn = new QRadioButton(parts[1]);
-        color_btn->setProperty("color", parts[0]);
-        if (i == 0) color_btn->setChecked(true);
-        color_group_->addButton(color_btn);
-        if (i < 3) {
-            color_row1->addWidget(color_btn);
-        } else {
-            color_row2->addWidget(color_btn);
+    
+    // Maximize button
+    max_btn_ = new QPushButton(controls_container);
+    max_btn_->setFixedSize(24, 24);
+    max_btn_->setToolTip("Maximize");
+    max_btn_->setStyleSheet(R"(
+        QPushButton {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            margin: 0 1px;
         }
-    }
+        QPushButton:hover {
+            background: rgba(128, 128, 128, 0.2);
+        }
+    )");
+    
+    // Close button
+    close_btn_ = new QPushButton(controls_container);
+    close_btn_->setFixedSize(24, 24);
+    close_btn_->setToolTip("Close");
+    close_btn_->setStyleSheet(R"(
+        QPushButton {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            margin: 0 1px;
+        }
+        QPushButton:hover {
+            background: #ef4444;
+        }
+    )");
+    
+    connect(close_btn_, &QPushButton::clicked, this, &OnboardingDialog::onClose);
+    connect(min_btn_, &QPushButton::clicked, this, &OnboardingDialog::onMinimize);
+    connect(max_btn_, &QPushButton::clicked, this, &OnboardingDialog::onMaximize);
+    
+    controls_layout->addStretch();
+    controls_layout->addWidget(min_btn_);
+    controls_layout->addWidget(max_btn_);
+    controls_layout->addWidget(close_btn_);
+    
+    title_layout->addWidget(controls_container);
+    
+    // Main content area
+    QWidget* main_widget = new QWidget(this);
+    QVBoxLayout* main_layout = new QVBoxLayout(main_widget);
+    main_layout->setContentsMargins(0, 0, 0, 0);
+    main_layout->setSpacing(0);
+    
+    // Stacked widget for different steps
+    stacked_widget_ = new QStackedWidget(main_widget);
+    
+    // Common styles - Radio button style without color (handled by applyTheme)
+    QString radioStyle = R"(
+        QRadioButton::indicator {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #64748b;
+            border-radius: 9px;
+            background: transparent;
+        }
+        QRadioButton::indicator:checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+        QRadioButton {
+            font-weight: 500;
+            font-size: 14px;
+            padding: 4px;
+        }
+    )";
 
-    color_layout_->addLayout(color_row1);
-    color_layout_->addLayout(color_row2);
-
-    QWidget* color_widget = new QWidget();
-    color_widget->setLayout(color_layout_);
-    stacked_widget_->addWidget(color_widget);
-
-    search_layout_ = new QVBoxLayout();
-    search_layout_->setSpacing(10);
-
-    QLabel* search_label = new QLabel("Select your search engine");
-    search_label->setStyleSheet("font-size: 15px; font-weight: 600; color: #f8fafc;");
-    search_layout_->addWidget(search_label);
-
+    // Step 1: Theme selection
+    QWidget* theme_step = new QWidget();
+    QVBoxLayout* theme_layout = new QVBoxLayout(theme_step);
+    theme_layout->setContentsMargins(32, 32, 32, 32);
+    theme_layout->setSpacing(20);
+    
+    QLabel* theme_title = new QLabel("Choose Your Theme");
+    // We avoid hardcoding color here, applyTheme will handle text color
+    theme_title->setStyleSheet("font-size: 22px; font-weight: bold; margin-bottom: 16px;");
+    theme_layout->addWidget(theme_title);
+    
+    theme_group_ = new QButtonGroup(this);
+    
+    // Dark theme option
+    QWidget* dark_option = new QWidget();
+    QVBoxLayout* dark_layout = new QVBoxLayout(dark_option);
+    dark_layout->setContentsMargins(0, 0, 0, 0);
+    dark_layout->setSpacing(4);
+    
+    QRadioButton* dark_radio = new QRadioButton("Dark");
+    dark_radio->setStyleSheet(radioStyle);
+    dark_layout->addWidget(dark_radio);
+    
+    QLabel* dark_desc = new QLabel("Perfect for late-night browsing with reduced eye strain");
+    dark_desc->setStyleSheet("color: #64748b; font-size: 13px; margin-left: 28px;");
+    dark_layout->addWidget(dark_desc);
+    
+    theme_group_->addButton(dark_radio, 0);
+    
+    // Light theme option
+    QWidget* light_option = new QWidget();
+    QVBoxLayout* light_layout = new QVBoxLayout(light_option);
+    light_layout->setContentsMargins(0, 0, 0, 0);
+    light_layout->setSpacing(4);
+    
+    QRadioButton* light_radio = new QRadioButton("Light");
+    light_radio->setStyleSheet(radioStyle);
+    light_layout->addWidget(light_radio);
+    
+    QLabel* light_desc = new QLabel("Bright and clear for daytime use and better visibility");
+    light_desc->setStyleSheet("color: #64748b; font-size: 13px; margin-left: 28px;");
+    light_layout->addWidget(light_desc);
+    
+    theme_group_->addButton(light_radio, 1);
+    
+    // System theme option
+    QWidget* system_option = new QWidget();
+    QVBoxLayout* system_layout = new QVBoxLayout(system_option);
+    system_layout->setContentsMargins(0, 0, 0, 0);
+    system_layout->setSpacing(4);
+    
+    QRadioButton* system_radio = new QRadioButton("System");
+    system_radio->setStyleSheet(radioStyle);
+    system_layout->addWidget(system_radio);
+    
+    QLabel* system_desc = new QLabel("Follow your operating system's theme preference");
+    system_desc->setStyleSheet("color: #64748b; font-size: 13px; margin-left: 28px;");
+    system_layout->addWidget(system_desc);
+    
+    theme_group_->addButton(system_radio, 2);
+    
+    theme_layout->addWidget(dark_option);
+    theme_layout->addWidget(light_option);
+    theme_layout->addWidget(system_option);
+    theme_layout->addStretch();
+    
+    stacked_widget_->addWidget(theme_step);
+    
+    // Step 2: Search engine selection
+    QWidget* search_step = new QWidget();
+    QVBoxLayout* search_layout = new QVBoxLayout(search_step);
+    search_layout->setContentsMargins(32, 32, 32, 32);
+    search_layout->setSpacing(20);
+    
+    QLabel* search_title = new QLabel("Choose Your Search Engine");
+    search_title->setStyleSheet("font-size: 22px; font-weight: bold; margin-bottom: 16px;");
+    search_layout->addWidget(search_title);
+    
     search_group_ = new QButtonGroup(this);
-
-    QStringList engines = {
-        "duckduckgo|DuckDuckGo - Privacy-first search",
-        "google|Google - Fast and comprehensive",
-        "bing|Microsoft Bing - AI-powered search"
+    
+    auto createSearchOption = [&](const QString& name, const QString& desc, int id) {
+        QWidget* option = new QWidget();
+        QVBoxLayout* layout = new QVBoxLayout(option);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(4);
+        
+        QRadioButton* radio = new QRadioButton(name);
+        radio->setStyleSheet(radioStyle);
+        layout->addWidget(radio);
+        
+        QLabel* descLabel = new QLabel(desc);
+        descLabel->setStyleSheet("color: #64748b; font-size: 13px; margin-left: 28px;");
+        layout->addWidget(descLabel);
+        
+        search_group_->addButton(radio, id);
+        return option;
     };
-
-    for (const QString& engine : engines) {
-        QStringList parts = engine.split("|");
-        QRadioButton* engine_btn = new QRadioButton(parts[1]);
-        engine_btn->setProperty("engine", parts[0]);
-        if (parts[0] == "duckduckgo") engine_btn->setChecked(true);
-        search_layout_->addWidget(engine_btn);
-        search_group_->addButton(engine_btn);
-    }
-
-    QWidget* search_widget = new QWidget();
-    search_widget->setLayout(search_layout_);
-    stacked_widget_->addWidget(search_widget);
-
-    main_layout->addWidget(stacked_widget_, 1);
-
-    QHBoxLayout* btn_layout = new QHBoxLayout();
-    btn_layout->setSpacing(12);
-
+    
+    search_layout->addWidget(createSearchOption("DuckDuckGo", "Privacy-focused search with no tracking", 0));
+    search_layout->addWidget(createSearchOption("Brave Search", "Independent search with privacy features", 1));
+    search_layout->addWidget(createSearchOption("Google", "Most popular search engine with comprehensive results", 2));
+    search_layout->addStretch();
+    
+    stacked_widget_->addWidget(search_step);
+    
+    main_layout->addWidget(stacked_widget_);
+    
+    // Navigation buttons
+    QWidget* button_container = new QWidget(main_widget);
+    QHBoxLayout* button_layout = new QHBoxLayout(button_container);
+    button_layout->setContentsMargins(32, 0, 32, 32);
+    button_layout->setSpacing(16);
+    
     back_btn_ = new QPushButton("Back");
-    back_btn_->setEnabled(false);
-    back_btn_->setStyleSheet("QPushButton { background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; padding: 10px 20px; } QPushButton:hover:not(:disabled) { background: #334155; } QPushButton:disabled { opacity: 0.5; }");
+    back_btn_->setCursor(Qt::PointingHandCursor);
+    back_btn_->setDisabled(true);
     connect(back_btn_, &QPushButton::clicked, this, &OnboardingDialog::onBack);
-    btn_layout->addWidget(back_btn_);
-
-    btn_layout->addStretch();
-
-    next_btn_ = new QPushButton("Continue");
-    next_btn_->setStyleSheet("QPushButton { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; } QPushButton:hover { opacity: 0.9; }");
+    button_layout->addWidget(back_btn_);
+    
+    next_btn_ = new QPushButton("Next");
+    next_btn_->setCursor(Qt::PointingHandCursor);
     connect(next_btn_, &QPushButton::clicked, this, &OnboardingDialog::onNext);
-    btn_layout->addWidget(next_btn_);
-
-    main_layout->addLayout(btn_layout);
-
-    applyTheme();
+    button_layout->addWidget(next_btn_);
+    
+    main_layout->addWidget(button_container);
+    
+    // Add layout to dialog
+    QVBoxLayout* dialog_layout = new QVBoxLayout(this);
+    dialog_layout->setContentsMargins(0, 0, 0, 0);
+    dialog_layout->setSpacing(0);
+    dialog_layout->addWidget(title_bar);
+    dialog_layout->addWidget(main_widget);
+    
+    // Ensure all options are visible with correct size
+    resize(600, 500);
 }
 
 void OnboardingDialog::onBack() {
@@ -301,57 +292,136 @@ void OnboardingDialog::onBack() {
 }
 
 void OnboardingDialog::onNext() {
-    if (current_step_ < 2) {
+    if (current_step_ < 1) {
         current_step_++;
         stacked_widget_->setCurrentIndex(current_step_);
         updateButtons();
     } else {
+        // Last step (1) - Finish
         saveSettings();
         accept();
     }
 }
 
 void OnboardingDialog::updateButtons() {
-    back_btn_->setEnabled(current_step_ > 0);
+    back_btn_->setDisabled(current_step_ == 0);
+    next_btn_->setText(current_step_ == 2 ? "Finish" : "Next");
+}
 
-    if (current_step_ >= 2) {
-        next_btn_->setText("Start Browsing");
+void OnboardingDialog::saveSettings() {
+    // Save theme
+    int theme_index = theme_group_->checkedId();
+    if (theme_index == 0) {
+        Settings::instance().setTheme("dark");
+        Settings::instance().setDarkMode(true);
+    } else if (theme_index == 1) {
+        Settings::instance().setTheme("light");
+        Settings::instance().setDarkMode(false);
     } else {
-        next_btn_->setText("Continue");
+        Settings::instance().setTheme("system");
+        Settings::instance().setDarkMode(false); // System will handle this
     }
+    
+    // Save search engine
+    int search_index = search_group_->checkedId();
+    QString searchEngine;
+    switch (search_index) {
+        case 0: searchEngine = "duckduckgo"; break;
+        case 1: searchEngine = "brave"; break;
+        case 2: searchEngine = "google"; break;
+    }
+    Settings::instance().setSearchEngine(searchEngine);
+    
+    Settings::instance().setFirstRun(false);
 }
 
 void OnboardingDialog::closeEvent(QCloseEvent* event) {
-    if (current_step_ < 2) {
-        event->ignore();
+    if (Settings::instance().isFirstRun()) {
+        // If closing during first run (without finishing), enable exit
+        event->accept();
+        QApplication::exit(0);
     } else {
         event->accept();
     }
 }
 
-void OnboardingDialog::saveSettings() {
-    auto& settings = Settings::instance();
-
-    QAbstractButton* themeBtn = theme_group_->checkedButton();
-    if (themeBtn) {
-        bool isDark = themeBtn->property("theme").toString() == "dark";
-        settings.setDarkMode(isDark);
+void OnboardingDialog::applyTheme() {
+    // Default to dark mode for first run (before settings are saved)
+    bool isDark = true; // Always use dark theme for onboarding
+    QString bgColor = "#0f172a";
+    QString textColor = "#e2e8f0";
+    QString btnBg = "#1e293b";
+    QString btnBorder = "#334155";
+    
+    setStyleSheet(QString("QDialog { background-color: %1; color: %2; } QLabel { color: %2; } QRadioButton { color: %2; }").arg(bgColor, textColor));
+    
+    if (title_) {
+        title_->setStyleSheet(QString("font-size: 12px; font-weight: 500; color: %1; margin-left: 8px;").arg(textColor));
     }
-
-    QAbstractButton* colorBtn = color_group_->checkedButton();
-    if (colorBtn) {
-        settings.setAccentColor(colorBtn->property("color").toString());
+    
+    if (back_btn_) {
+        back_btn_->setStyleSheet(QString(R"(
+            QPushButton {
+                background: %1;
+                color: %2;
+                border: 1px solid %3;
+                border-radius: 8px;
+                padding: 12px 24px;
+                font-weight: 500;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background: %3;
+                border-color: #3b82f6;
+            }
+            QPushButton:disabled {
+                background: %1;
+                border-color: %3;
+                color: #94a3b8;
+                opacity: 0.5;
+            }
+        )").arg(btnBg, textColor, btnBorder));
     }
-
-    QAbstractButton* searchBtn = search_group_->checkedButton();
-    if (searchBtn) {
-        settings.setSearchEngine(searchBtn->property("engine").toString());
+    
+    if (next_btn_) {
+        next_btn_->setStyleSheet(R"(
+            QPushButton {
+                background: #3b82f6;
+                color: #ffffff;
+                border: 1px solid #3b82f6;
+                border-radius: 8px;
+                padding: 12px 24px;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background: #2563eb;
+                border-color: #2563eb;
+            }
+        )");
     }
+    
+    // We don't have direct access to all radio buttons easily unless we stored them?
+    // Actually, setStyleSheet on the QDialog propagates to children unless overridden.
+    // In setupUi, I changed QRadioButton stylesheet to NOT include color!
+    // So QRadioButton { color: %2; } in this function's setStyleSheet should apply to all of them.
+    // That works!
+}
 
-    settings.setFirstRun(false);
-    emit settings.settingsChanged();
+void OnboardingDialog::onMinimize() {
+    showMinimized();
+}
 
-    qDebug() << "Onboarding settings saved";
+void OnboardingDialog::onMaximize() {
+    if (isMaximized()) {
+        showNormal();
+    } else {
+        showMaximized();
+    }
+}
+
+void OnboardingDialog::onClose() {
+    close();
 }
 
 } // namespace Tsunami

@@ -1,12 +1,18 @@
 #pragma once
 
 #include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QSlider>
 #include <QSpinBox>
-#include <QLabel>
+#include <QTabWidget>
+#include <QButtonGroup>
+#include <QRadioButton>
 
 namespace Tsunami {
 
@@ -17,31 +23,28 @@ public:
     
 private:
     void setupUi();
-    void applyTheme();
     void loadSettings();
     void saveSettings();
     void resetSettings();
-    void onSettingsChanged();
     
-    QComboBox* theme_combo_;
-    QComboBox* accent_combo_;
-    QComboBox* search_engine_;
-    QCheckBox* block_trackers_;
-    QCheckBox* block_ads_;
-    QCheckBox* https_only_;
-    QCheckBox* do_not_track_;
-    QCheckBox* block_third_party_cookies_;
-    QCheckBox* block_fingerprinting_;
-    QCheckBox* disable_webrtc_;
-    QCheckBox* dark_mode_check_;
-    QCheckBox* restore_tabs_;
-    QCheckBox* auto_reload_;
-    QCheckBox* show_bookmarks_bar_;
-    QCheckBox* auto_clear_cache_;
-    QLineEdit* homepage_edit_;
-    QSlider* zoom_level_;
-    QLabel* zoom_label_;
-    QSpinBox* auto_reload_interval_;
+    QTabWidget* tab_widget_ = nullptr;
+    QComboBox* theme_combo_ = nullptr;
+    QButtonGroup* search_group_ = nullptr;
+    QCheckBox* block_trackers_ = nullptr;
+    QCheckBox* block_ads_ = nullptr;
+    QCheckBox* https_only_ = nullptr;
+    QCheckBox* do_not_track_ = nullptr;
+    QCheckBox* block_third_party_cookies_ = nullptr;
+    QCheckBox* block_fingerprinting_ = nullptr;
+    QCheckBox* disable_webrtc_ = nullptr;
+    QCheckBox* restore_tabs_ = nullptr;
+    QCheckBox* auto_reload_ = nullptr;
+    QLineEdit* homepage_edit_ = nullptr;
+    QSpinBox* auto_reload_interval_ = nullptr;
+    QSlider* zoom_level_ = nullptr;
+    QLabel* zoom_label_ = nullptr;
+    QCheckBox* show_bookmarks_bar_ = nullptr;
+    QCheckBox* auto_clear_cache_ = nullptr;
     
 public slots:
     static void showDialog(QWidget* parent = nullptr);
