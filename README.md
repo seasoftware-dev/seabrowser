@@ -127,6 +127,8 @@ Output will be in `output/`:
 - `output/flatpak/` - Flatpak bundle
 - `output/appimage/` - AppImage (portable)
 
+^ Currently, Builds are broken. If you would like to fix them, please do! However, the binary still works so please use that. ^
+
 ### Windows
 
 ```powershell
