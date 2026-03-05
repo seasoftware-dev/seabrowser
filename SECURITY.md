@@ -20,7 +20,7 @@ If you discover a security vulnerability in Tsunami Browser, **please do not dis
 Instead, report it privately using one of the following methods:
 
 - Open a **private security advisory** on GitHub (preferred)
-- Email: security@tsunami.io
+- Email: ryan@ryanpc.org or wyind@wyind.dev
 
 When reporting, include as much detail as possible:
 
