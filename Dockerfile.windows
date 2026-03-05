@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS builder
+
+# Install Qt and MinGW dependencies
+RUN powershell -Command \
+    Invoke-WebRequest -Uri 'https://download.qt.io/official_releases/qt/6.7/6.7.0/qt-opensource-windows-x86_64-6.7.0.exe' -OutFile 'qt-installer.exe' ; \
+    .\qt-installer.exe --script silent.qs --accept-licenses --accept-obligations ; \
+    Remove-Item -Path 'qt-installer.exe' -Force
+
+# Set up paths
+ENV PATH="C:\Qt\6.7.0\mingw_64\bin;C:\tools\mingw64\bin;${PATH}"
+
+# Copy source
+COPY . /src
+WORKDIR /src
+
+# Build
+RUN mkdir build && cd build && \
+    cmake -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="C:\Qt\6.7.0\mingw_64" .. && \
+    mingw32-make -j4
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+COPY --from=builder /src/build/Tsunami.exe /app/
